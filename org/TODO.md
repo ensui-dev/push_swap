@@ -18,39 +18,39 @@
   - [x] Create `README.md` at root
 
 ### 0.2 Makefile Creation
-- [ ] Write Makefile with required rules
-  - [ ] `NAME = push_swap` variable
-  - [ ] `all` rule (compiles push_swap)
-  - [ ] `clean` rule (removes .o files)
-  - [ ] `fclean` rule (removes .o and binary)
-  - [ ] `re` rule (fclean + all)
-  - [ ] `bonus` rule (compiles checker)
-  - [ ] Compile libft first using its Makefile
-  - [ ] Use flags: `-Wall -Wextra -Werror`
-  - [ ] Use `cc` compiler
-  - [ ] Prevent relinking (check if files changed)
-  - [ ] Test that `make` works without errors
-  - [ ] Test that `make clean` removes only .o files
-  - [ ] Test that `make fclean` removes everything
-  - [ ] Test that `make re` rebuilds properly
-  - [ ] Verify no relinking occurs on second `make`
+- [x] Write Makefile with required rules
+  - [x] `NAME = push_swap` variable
+  - [x] `all` rule (compiles push_swap)
+  - [x] `clean` rule (removes .o files)
+  - [x] `fclean` rule (removes .o and binary)
+  - [x] `re` rule (fclean + all)
+  - [x] `bonus` rule (compiles checker)
+  - [x] Compile libft first using its Makefile
+  - [x] Use flags: `-Wall -Wextra -Werror`
+  - [x] Use `cc` compiler
+  - [x] Prevent relinking (check if files changed)
+  - [x] Test that `make` works without errors
+  - [x] Test that `make clean` removes only .o files
+  - [x] Test that `make fclean` removes everything
+  - [x] Test that `make re` rebuilds properly
+  - [x] Verify no relinking occurs on second `make`
 
 ### 0.3 Header File Setup
-- [ ] Create `includes/push_swap.h`
-  - [ ] Add include guards (`#ifndef PUSH_SWAP_H`)
-  - [ ] Include necessary system headers (`<unistd.h>`, `<stdlib.h>`)
-  - [ ] Include libft header (`"../libft/libft.h"`)
-  - [ ] Add structure definitions (forward declare)
-  - [ ] Add all function prototypes (will expand as you code)
-  - [ ] Add any necessary macros (INT_MAX, INT_MIN, TRUE, FALSE, ERROR)
-  - [ ] Close include guard (`#endif`)
+- [x] Create `includes/push_swap.h`
+  - [x] Add include guards (`#ifndef PUSH_SWAP_H`)
+  - [x] Include necessary system headers (`<unistd.h>`, `<stdlib.h>`)
+  - [x] Include libft header (`"../libft/libft.h"`)
+  - [x] Add structure definitions (forward declare)
+  - [x] Add all function prototypes (will expand as you code)
+  - [x] Add any necessary macros (INT_MAX, INT_MIN, TRUE, FALSE, ERROR)
+  - [x] Close include guard (`#endif`)
 
 ---
 
 ## Phase 1: Core Data Structures
 
 ### 1.1 Stack Node Structure
-- [ ] Define `t_stack` structure in header
+- [x] Define `t_stack` structure in header
   ```c
   typedef struct s_stack
   {
@@ -63,40 +63,45 @@
       struct s_stack *next;   // Pointer to next node
   }   t_stack;
   ```
-- [ ] Verify structure follows 42 Norm (no tabs, proper indentation)
+- [x] Verify structure follows 42 Norm (no tabs, proper indentation)
 
 ### 1.2 Stack Utility Functions - Basic Operations
-- [ ] Create `srcs/stack_utils.c`
-  - [ ] Write `stack_new(int value)` function
-    - [ ] Allocate memory with `malloc(sizeof(t_stack))`
-    - [ ] Initialize all fields (value, index=-1, pos=0, costs=0)
-    - [ ] Set `next` to NULL
-    - [ ] Return new node
-    - [ ] Handle malloc failure (return NULL)
+**File:** `srcs/stack_utils.c` (5 functions - 42 Norm max per file)
 
-  - [ ] Write `stack_size(t_stack *stack)` function
-    - [ ] Count nodes in linked list
-    - [ ] Return 0 if stack is NULL
-    - [ ] Use while loop (no for loops - 42 Norm)
-    - [ ] Return total count
+- [x] Create `srcs/stack_utils.c`
+  - [x] Write `stack_new(int value)` function
+    - [x] Allocate memory with `malloc(sizeof(t_stack))`
+    - [x] Initialize all fields (value, index=-1, pos=0, costs=0)
+    - [x] Set `next` to NULL
+    - [x] Return new node
+    - [x] Handle malloc failure (return NULL)
 
-  - [ ] Write `stack_last(t_stack *stack)` function
-    - [ ] Traverse to last node
-    - [ ] Return NULL if stack is NULL
-    - [ ] Return pointer to last node
+  - [x] Write `stack_size(t_stack *stack)` function
+    - [x] Count nodes in linked list
+    - [x] Return 0 if stack is NULL
+    - [x] Use while loop (no for loops - 42 Norm)
+    - [x] Return total count
 
-  - [ ] Write `stack_add_back(t_stack **stack, t_stack *new)` function
-    - [ ] If stack is empty, set *stack = new
-    - [ ] Else find last node and add new to its next
-    - [ ] Ensure proper linking
+  - [x] Write `stack_last(t_stack *stack)` function
+    - [x] Traverse to last node
+    - [x] Return NULL if stack is NULL
+    - [x] Return pointer to last node
 
-  - [ ] Write `stack_add_front(t_stack **stack, t_stack *new)` function
-    - [ ] Set new->next to current *stack
-    - [ ] Set *stack to new
-    - [ ] Useful for push operations
+  - [x] Write `stack_add_back(t_stack **stack, t_stack *new)` function
+    - [x] If stack is empty, set *stack = new
+    - [x] Else find last node and link: `last->next = new`
+    - [x] **Proper linking explained**: Must set `last->next = new` to connect nodes
+    - [x] Without linking: node is orphaned → memory leak + traversal breaks
 
-### 1.3 Stack Utility Functions - Advanced
-- [ ] Add to `srcs/stack_utils.c`
+  - [x] Write `stack_add_front(t_stack **stack, t_stack *new)` function
+    - [x] Set new->next to current *stack
+    - [x] Set *stack to new
+    - [x] **Push operations**: This O(1) pattern is core logic of pa/pb
+
+### 1.3 Stack Utility Functions - Search Operations
+**File:** `srcs/stack_find.c` (5 functions - new file for 42 Norm compliance)
+
+- [x] Create `srcs/stack_find.c`
   - [ ] Write `find_min(t_stack *stack)` function
     - [ ] Return minimum value in stack
     - [ ] Iterate through all nodes

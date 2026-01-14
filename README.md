@@ -208,7 +208,8 @@ push_swap/
 │   ├── parser.c               # Argument parsing and validation
 │   ├── error.c                # Error handling
 │   ├── stack_init.c           # Stack initialization
-│   ├── stack_utils.c          # Stack utility functions
+│   ├── stack_utils.c          # Basic stack operations (new, size, last, add)
+│   ├── stack_find.c           # Stack search (min, max, is_sorted)
 │   ├── position.c             # Position assignment
 │   ├── index.c                # Index normalization
 │   ├── operations_swap.c      # sa, sb, ss operations
