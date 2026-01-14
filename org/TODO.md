@@ -102,54 +102,69 @@
 **File:** `srcs/stack_find.c` (5 functions - new file for 42 Norm compliance)
 
 - [x] Create `srcs/stack_find.c`
-  - [ ] Write `find_min(t_stack *stack)` function
-    - [ ] Return minimum value in stack
-    - [ ] Iterate through all nodes
-    - [ ] Track minimum value
-    - [ ] Return min value
+  - [x] Write `find_min(t_stack *stack)` function
+    - [x] Return minimum value in stack
+    - [x] Iterate through all nodes
+    - [x] Track minimum value
+    - [x] Return min value
 
-  - [ ] Write `find_max(t_stack *stack)` function
-    - [ ] Return maximum value in stack
-    - [ ] Similar to find_min
+  - [x] Write `find_max(t_stack *stack)` function
+    - [x] Return maximum value in stack
+    - [x] Similar to find_min
 
-  - [ ] Write `find_min_index(t_stack *stack)` function
-    - [ ] Return minimum index in stack
-    - [ ] Useful for index-based operations
+  - [x] Write `find_min_index(t_stack *stack)` function
+    - [x] Return minimum index in stack
+    - [x] Useful for index-based operations
 
-  - [ ] Write `find_max_index(t_stack *stack)` function
-    - [ ] Return maximum index in stack
+  - [x] Write `find_max_index(t_stack *stack)` function
+    - [x] Return maximum index in stack
 
-  - [ ] Write `is_sorted(t_stack *stack)` function
-    - [ ] Check if stack is sorted in ascending order
-    - [ ] Compare each node with next
-    - [ ] Return 1 (TRUE) if sorted, 0 (FALSE) otherwise
-    - [ ] Return 1 if stack is empty or has 1 element
+  - [x] Write `is_sorted(t_stack *stack)` function
+    - [x] Check if stack is sorted in ascending order
+    - [x] Compare each node with next
+    - [x] Return 1 (TRUE) if sorted, 0 (FALSE) otherwise
+    - [x] Return 1 if stack is empty or has 1 element
 
 ### 1.4 Position Assignment
-- [ ] Create `srcs/position.c`
-  - [ ] Write `assign_position(t_stack *stack)` function
-    - [ ] Iterate through stack
-    - [ ] Assign current position to each node (0, 1, 2...)
-    - [ ] Store in `pos` field of each node
-    - [ ] Needed for cost calculation
+- [x] Create `srcs/position.c`
+  - [x] Write `assign_position(t_stack *stack)` function
+    - [x] Iterate through stack
+    - [x] Assign current position to each node (0, 1, 2...)
+    - [x] Store in `pos` field of each node
+    - [x] Needed for cost calculation
 
 ---
 
 ## Phase 2: Input Parsing and Validation
 
 ### 2.1 Argument Parsing
-- [ ] Create `srcs/parser.c`
-  - [ ] Write `parse_arguments(int argc, char **argv)` function
-    - [ ] Handle case: no arguments (return NULL, no output)
-    - [ ] Handle case: single argument with multiple numbers
-      - [ ] Use `ft_split()` to split by spaces
-      - [ ] Parse each substring
-      - [ ] Free split array after parsing
-    - [ ] Handle case: multiple arguments (each is a number)
-      - [ ] Start from argv[1] (argv[0] is program name)
-      - [ ] Parse each argument
-    - [ ] Return head of stack A
-    - [ ] Call validation functions
+- [x] Create `srcs/parser.c`
+  - [x] Write `count_total_numbers(int argc, char **argv)` helper function (static)
+    - [x] Iterate through all arguments (argv[1] to argv[argc-1])
+    - [x] Split each argument by spaces using `ft_split()`
+    - [x] Count total numbers across all split results
+    - [x] Free temporary split arrays after counting
+    - [x] Return total count or -1 on error
+    - [x] Handles single strings, multiple args, and mixed formats
+
+  - [ ] Write `join_all_arguments(int argc, char **argv, int total)` helper function (static)
+    - [ ] Allocate result array for (total + 1) pointers
+    - [ ] Iterate through all arguments
+    - [ ] Split each argument by spaces
+    - [ ] Transfer string pointers from split to result (ownership transfer)
+    - [ ] Free only temp array structure (not strings - transferred)
+    - [ ] NULL-terminate result array
+    - [ ] Return combined array or NULL on error
+
+  - [ ] Write `parse_arguments(int argc, char **argv)` main function
+    - [ ] Handle case: no arguments (argc < 2, return NULL)
+    - [ ] Call `count_total_numbers()` to get total count
+    - [ ] Validate count > 0
+    - [ ] Call `join_all_arguments()` to build result array
+    - [ ] Return unified array of number strings (ALWAYS allocated)
+    - [ ] **NEW:** Supports mixed formats like `./push_swap "2 4" 91 10`
+    - [ ] **NEW:** Consistent memory management (always allocates)
+    - [ ] Memory: Caller MUST free with free_split() - no argc checks needed
 
 ### 2.2 Number Validation
 - [ ] Add to `srcs/parser.c`
@@ -180,15 +195,18 @@
 
 ### 2.4 Stack Initialization
 - [ ] Create `srcs/stack_init.c`
-  - [ ] Write `init_stack_a(int argc, char **argv)` function
-    - [ ] Call parse_arguments
-    - [ ] Validate each number:
-      - [ ] Check if valid number format
-      - [ ] Check if within int range
+  - [ ] Write `init_stack_a(char **numbers)` function
+    - [ ] **UPDATED SIGNATURE:** Now takes `char **numbers` (already parsed)
+    - [ ] Main() calls parse_arguments and passes result to this function
+    - [ ] Validate each number string:
+      - [ ] Check if valid number format (is_valid_number)
+      - [ ] Convert to long (ft_atol)
+      - [ ] Check if within int range (is_int_range)
     - [ ] Create stack node for each valid number
-    - [ ] Add node to stack A
-    - [ ] Check for duplicates
+    - [ ] Add node to stack A (stack_add_back)
+    - [ ] Check for duplicates (has_duplicates)
     - [ ] Return stack A or NULL on error
+    - [ ] **IMPORTANT:** Does NOT free numbers array (caller's responsibility)
 
 ---
 
@@ -214,10 +232,10 @@
     - [ ] Set *stack to NULL after freeing all
     - [ ] Handle NULL pointer (do nothing)
 
-  - [ ] Write `free_split(char **split)` function
-    - [ ] Free each string in split array
-    - [ ] Free the array itself
-    - [ ] Needed if using ft_split for parsing
+  - [x] Write `free_split(char **split)` function
+    - [x] Free each string in split array
+    - [x] Free the array itself
+    - [x] Needed if using ft_split for parsing
 
 ---
 
@@ -476,18 +494,23 @@
 ### 8.1 Main Function
 - [ ] Create `srcs/main.c`
   - [ ] Write `main(int argc, char **argv)` function
-    - [ ] Declare stack_a and stack_b pointers
+    - [ ] Declare stack_a, stack_b pointers, and numbers array
     - [ ] Initialize stack_b to NULL
-    - [ ] Call init_stack_a to parse and create stack A
+    - [ ] **Step 1:** Call parse_arguments(argc, argv) to get numbers array
+    - [ ] If parse fails (NULL returned): return 0 (no error - just no args)
+    - [ ] **Step 2:** Call init_stack_a(numbers) to create and validate stack A
     - [ ] If init fails (NULL returned):
-      - [ ] Call error_exit
+      - [ ] Free numbers with free_split() - ALWAYS allocated
+      - [ ] Call print_error()
+      - [ ] Return 1
     - [ ] Check if stack is already sorted
-      - [ ] If sorted, free and exit (no operations needed)
-    - [ ] Assign indices to stack A
-    - [ ] Get stack size
-    - [ ] Route to appropriate sorting algorithm
+      - [ ] If sorted: free stack A, free numbers, exit (no operations)
+    - [ ] Assign indices to stack A (assign_index)
+    - [ ] Route to appropriate sorting algorithm (choose_sort)
     - [ ] Free both stacks
+    - [ ] **Step 3:** Free numbers array with free_split() - ALWAYS required
     - [ ] Return 0
+    - [ ] **IMPORTANT:** Always free numbers - no argc checks needed
 
 ### 8.2 Algorithm Router
 - [ ] Add to `srcs/main.c`
@@ -512,10 +535,21 @@
 ### 9.2 Error Testing
 - [ ] Test error handling
   - [ ] Test: `./push_swap` (no args - should show nothing)
+  - [ ] Test: `./push_swap ""` (empty string - should show Error)
   - [ ] Test: `./push_swap 1 2 2` (duplicates - should show Error)
   - [ ] Test: `./push_swap 1 a 3` (non-integer - should show Error)
   - [ ] Test: `./push_swap 2147483648` (overflow - should show Error)
   - [ ] Test: `./push_swap -2147483649` (underflow - should show Error)
+
+### 9.2b Mixed Format Testing (NEW!)
+- [ ] Test mixed argument formats
+  - [ ] Test: `./push_swap "2 4 3" 91 10` (mixed: string + numbers)
+  - [ ] Test: `./push_swap 2 4 "3 91" 10` (mixed: numbers + string + number)
+  - [ ] Test: `./push_swap "1 2" "3 4" "5"` (multiple strings)
+  - [ ] Test: `./push_swap "5   3    1"` (extra spaces in string)
+  - [ ] Test: `./push_swap "  5 3 1  "` (leading/trailing spaces)
+  - [ ] Verify all mixed formats work correctly
+  - [ ] Verify memory is properly freed (valgrind)
 
 ### 9.3 Valgrind Memory Testing
 - [ ] Run valgrind on all test cases

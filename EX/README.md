@@ -199,10 +199,9 @@ ARG=$(seq 1 100 | shuf | tr '\n' ' ')
 push_swap/
 ├── Makefile                    # Build configuration
 ├── README.md                   # This file
-├── en.subject.pdf              # Project subject
 ├── includes/
 │   ├── push_swap.h            # Main header file
-│   └── push_swap_bonus.h      # Bonus header (if implemented)
+│   └── push_swap_bonus.h      # Bonus header
 ├── srcs/
 │   ├── main.c                 # Entry point and algorithm router
 │   ├── parser.c               # Argument parsing and validation
@@ -227,11 +226,7 @@ push_swap/
 │   ├── Makefile               # Libft build configuration
 │   ├── libft.h                # Libft header
 │   └── *.c                    # Libft source files
-└── org/
-    ├── GETTING_STARTED.md     # Development guide
-    ├── PROJECT_ANALYSIS.md    # Detailed requirements
-    ├── TODO.md                # Implementation checklist
-    └── LIBFT_VERIFICATION_REPORT.md
+
 ```
 
 ---

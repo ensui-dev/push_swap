@@ -61,7 +61,8 @@ typedef struct s_stack
 /* ========================================================================== */
 
 /* -------------------------- Parsing & Validation -------------------------- */
-t_stack	*init_stack_a(int argc, char **argv);
+char	**parse_arguments(int argc, char **argv);
+t_stack	*init_stack_a(char **numbers);
 int		is_valid_number(char *str);
 long	ft_atol(const char *str);
 int		is_int_range(long num);
