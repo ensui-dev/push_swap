@@ -712,9 +712,12 @@ printf("✓ Negative duplicates detected\n");
 
 ## Location in Project
 
-**File:** `srcs/parser.c` or `srcs/validation.c`
+**File:** `srcs/validate.c`
 **Header:** `includes/push_swap.h`
-**Phase in TODO:** Phase 2.6 (Parsing & Validation - Duplicate Detection)
+**Phase in TODO:** Phase 2.3 (Parsing & Validation - Duplicate Detection)
+
+**Note:** This function is in `validate.c` (not `parser.c`) to comply with 42 Norm's
+5 functions per file limit. Parser.c contains parse_arguments + 2 static helpers.
 
 **Function prototype:**
 ```c

@@ -147,33 +147,38 @@
     - [x] Return total count or -1 on error
     - [x] Handles single strings, multiple args, and mixed formats
 
-  - [ ] Write `join_all_arguments(int argc, char **argv, int total)` helper function (static)
-    - [ ] Allocate result array for (total + 1) pointers
-    - [ ] Iterate through all arguments
-    - [ ] Split each argument by spaces
-    - [ ] Transfer string pointers from split to result (ownership transfer)
-    - [ ] Free only temp array structure (not strings - transferred)
-    - [ ] NULL-terminate result array
-    - [ ] Return combined array or NULL on error
+  - [x] Write `join_all_arguments(int argc, char **argv, int total)` helper function (static)
+    - [x] Allocate result array for (total + 1) pointers
+    - [x] Iterate through all arguments
+    - [x] Split each argument by spaces
+    - [x] Transfer string pointers from split to result (ownership transfer)
+    - [x] Free only temp array structure (not strings - transferred)
+    - [x] NULL-terminate result array
+    - [x] Return combined array or NULL on error
 
-  - [ ] Write `parse_arguments(int argc, char **argv)` main function
-    - [ ] Handle case: no arguments (argc < 2, return NULL)
-    - [ ] Call `count_total_numbers()` to get total count
-    - [ ] Validate count > 0
-    - [ ] Call `join_all_arguments()` to build result array
-    - [ ] Return unified array of number strings (ALWAYS allocated)
-    - [ ] **NEW:** Supports mixed formats like `./push_swap "2 4" 91 10`
-    - [ ] **NEW:** Consistent memory management (always allocates)
-    - [ ] Memory: Caller MUST free with free_split() - no argc checks needed
+  - [x] Write `parse_arguments(int argc, char **argv)` main function
+    - [x] Handle case: no arguments (argc < 2, return NULL)
+    - [x] Call `count_total_numbers()` to get total count
+    - [x] Validate count > 0
+    - [x] Call `join_all_arguments()` to build result array
+    - [x] Return unified array of number strings (ALWAYS allocated)
+    - [x] **NEW:** Supports mixed formats like `./push_swap "2 4" 91 10`
+    - [x] **NEW:** Consistent memory management (always allocates)
+    - [x] Memory: Caller MUST free with free_split() - no argc checks needed
 
 ### 2.2 Number Validation
-- [ ] Add to `srcs/parser.c`
-  - [ ] Write `is_valid_number(char *str)` function
-    - [ ] Check if string represents valid integer
-    - [ ] Handle signs ('+', '-')
-    - [ ] Check all characters are digits
-    - [ ] Handle leading zeros
-    - [ ] Return 1 if valid, 0 if invalid
+**File:** `srcs/validate.c` (4 functions - separate file for 42 Norm compliance)
+
+**NOTE:** These functions are in a separate file because parser.c already has 3 functions
+(parse_arguments + 2 static helpers), and 42 Norm limits files to 5 functions max.
+
+- [x] Create `srcs/validate.c`
+  - [x] Write `is_valid_number(char *str)` function
+    - [x] Check if string represents valid integer
+    - [x] Handle signs ('+', '-')
+    - [x] Check all characters are digits
+    - [x] Handle leading zeros
+    - [x] Return 1 if valid, 0 if invalid
 
   - [ ] Write `ft_atol(char *str)` function
     - [ ] Convert string to long (to check overflow)
@@ -186,7 +191,7 @@
     - [ ] Return 1 if valid, 0 if overflow
 
 ### 2.3 Duplicate Detection
-- [ ] Add to `srcs/parser.c`
+- [ ] Add to `srcs/validate.c`
   - [ ] Write `has_duplicates(t_stack *stack)` function
     - [ ] Compare each node with all other nodes
     - [ ] Check for duplicate values

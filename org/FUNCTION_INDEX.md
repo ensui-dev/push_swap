@@ -31,18 +31,24 @@
 ## Phase 2: Parsing and Validation ✅ COMPLETE
 
 ### Argument Parsing (Phase 2.1) ✅ COMPLETE
+**File:** `srcs/parser.c` (3 functions)
 - ✅ [parse_arguments](functions/parse_arguments.md) - Parse command line arguments (unified approach, supports mixed formats)
   - ✅ [count_total_numbers](functions/count_total_numbers.md) - Static helper: Count numbers across all arguments
   - ✅ [join_all_arguments](functions/join_all_arguments.md) - Static helper: Combine split arguments into single array
-- ✅ [init_stack_a](functions/init_stack_a.md) - Initialize stack A from parsed numbers (signature updated: takes char **numbers)
 
 ### Number Validation (Phase 2.2) ✅ COMPLETE
+**File:** `srcs/validate.c` (4 functions) - **NEW FILE for 42 Norm compliance**
 - ✅ [is_valid_number](functions/is_valid_number.md) - Validate number string format
 - ✅ [ft_atol](functions/ft_atol.md) - Convert string to long (overflow check)
 - ✅ [is_int_range](functions/is_int_range.md) - Check if within INT_MIN/INT_MAX
 
 ### Duplicate Detection (Phase 2.3) ✅ COMPLETE
+**File:** `srcs/validate.c` (included above)
 - ✅ [has_duplicates](functions/has_duplicates.md) - Check for duplicate values
+
+### Stack Initialization (Phase 2.4) ✅ COMPLETE
+**File:** `srcs/stack_init.c` (1 function)
+- ✅ [init_stack_a](functions/init_stack_a.md) - Initialize stack A from parsed numbers (signature updated: takes char **numbers)
 
 ---
 

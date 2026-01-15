@@ -142,7 +142,7 @@ No output (silent mode)
 **If print flag is set:**
 ```c
 if (print)
-    write(1, "rr\n", 3);
+    ft_printf("rr\n");
 ```
 
 **Output:** "rr\n"
@@ -419,7 +419,7 @@ void	rr(t_stack **stack_a, t_stack **stack_b, int print)
     ra(stack_a, 0);
     rb(stack_b, 0);
     if (print)
-        write(1, "rr\n", 3);
+        ft_printf("rr\n");
 }
 ```
 
@@ -469,7 +469,7 @@ void rr(t_stack **stack_a, t_stack **stack_b, int print)
     ra(stack_a, 0);  // Silent
     rb(stack_b, 0);  // Silent
     if (print)
-        write(1, "rr\n", 3);  // Print once
+        ft_printf("rr\n");  // Print once
 }
 ```
 
@@ -494,7 +494,7 @@ void rr(t_stack **stack_a, t_stack **stack_b, int print)
     }
 
     if (print && a_rotated && b_rotated)  // Wrong!
-        write(1, "rr\n", 3);
+        ft_printf("rr\n");
 }
 ```
 

@@ -67,6 +67,7 @@
 
 ### Phase 2: Parsing & Validation (6/6) ✅ COMPLETE
 
+#### Argument Parsing - File: `srcs/parser.c` (3 functions)
 12. ✅ **[parse_arguments.md](functions/parse_arguments.md)** (~19 KB)
     - Entry point for parsing command line arguments
     - Handles both single string "1 2 3" and multiple args
@@ -74,10 +75,8 @@
       - **[count_total_numbers.md](functions/count_total_numbers.md)** (~25 KB) - First-pass count
       - **[join_all_arguments.md](functions/join_all_arguments.md)** (~30 KB) - Second-pass build
 
-13. ✅ **[init_stack_a.md](functions/init_stack_a.md)** (~23 KB)
-    - Initializes stack A from parsed string array
-    - Complete validation and node creation
-    - Orchestrates parsing pipeline
+#### Validation Functions - File: `srcs/validate.c` (4 functions)
+**NOTE:** Separated from parser.c for 42 Norm compliance (max 5 functions per file)
 
 14. ✅ **[is_valid_number.md](functions/is_valid_number.md)** (~14 KB)
     - Validates number string format
@@ -98,6 +97,12 @@
     - Checks for duplicate values in stack
     - Uses nested loop comparison O(n²)
     - Returns 1 if duplicates found
+
+#### Stack Initialization - File: `srcs/stack_init.c` (1 function)
+13. ✅ **[init_stack_a.md](functions/init_stack_a.md)** (~23 KB)
+    - Initializes stack A from parsed string array
+    - Complete validation and node creation
+    - Orchestrates parsing pipeline
 
 ### Phase 3: Error Handling & Memory (4/4) ✅ COMPLETE
 
@@ -258,14 +263,19 @@
 **Progress: 11/11 (100%)** ✅
 
 ### Phase 2: Parsing & Validation ✅ COMPLETE
+**File: `srcs/parser.c`** (3 functions)
 - ✅ parse_arguments
 - ✅ count_total_numbers (static helper - dedicated doc)
 - ✅ join_all_arguments (static helper - dedicated doc)
-- ✅ init_stack_a
+
+**File: `srcs/validate.c`** (4 functions) - NEW FILE
 - ✅ is_valid_number
 - ✅ ft_atol
 - ✅ is_int_range
 - ✅ has_duplicates
+
+**File: `srcs/stack_init.c`** (1 function)
+- ✅ init_stack_a
 
 **Progress: 6/6 core + 2/2 helpers (100%)** ✅
 

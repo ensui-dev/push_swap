@@ -183,7 +183,7 @@ stack_b -> [3] -> [7] -> [1] -> NULL
 **Output "pb\n" if requested:**
 ```c
 if (print)
-    write(1, "pb\n", 3);
+    ft_printf("pb\n");
 ```
 
 ---
@@ -256,7 +256,7 @@ stack_b -> [3] -> [7] -> [1] -> NULL
 
 ```c
 if (print)
-    write(1, "pb\n", 3);
+    ft_printf("pb\n");
 
 Output: pb
 ```
@@ -916,7 +916,7 @@ void pb(t_stack **stack_a, t_stack **stack_b, int print)
     temp = *stack_a;
     *stack_a = (*stack_a)->next;
     stack_add_front(stack_b, temp);
-    if (print) write(1, "pb\n", 3);
+    if (print) ft_printf("pb\n");
 }
 
 // pa implementation (almost identical!)
@@ -926,7 +926,7 @@ void pa(t_stack **stack_a, t_stack **stack_b, int print)
     temp = *stack_b;
     *stack_b = (*stack_b)->next;
     stack_add_front(stack_a, temp);
-    if (print) write(1, "pa\n", 3);
+    if (print) ft_printf("pa\n");
 }
 
 Only differences:
@@ -1007,7 +1007,7 @@ void pb(t_stack **stack_a, t_stack **stack_b, int print)
     stack_add_front(stack_b, temp);
 
     if (print)
-        write(1, "pb\n", 3);
+        ft_printf("pb\n");
 }
 ```
 

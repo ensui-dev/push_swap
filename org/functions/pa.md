@@ -179,7 +179,7 @@ stack_a -> [3] -> [5] -> [8] -> NULL
 **Output "pa\n" if requested:**
 ```c
 if (print)
-    write(1, "pa\n", 3);
+    ft_printf("pa\n");
 ```
 
 ---
@@ -252,7 +252,7 @@ stack_a -> [3] -> [5] -> [8] -> NULL
 
 ```c
 if (print)
-    write(1, "pa\n", 3);
+    ft_printf("pa\n");
 
 Output: pa
 ```
@@ -644,7 +644,7 @@ void pa(t_stack **stack_a, t_stack **stack_b, int print)
     *stack_a = (*stack_a)->next;
     stack_add_front(stack_b, temp);  // Wrong destination
     if (print)
-        write(1, "pa\n", 3);  // Right output, wrong operation!
+        ft_printf("pa\n");  // Right output, wrong operation!
 }
 
 Result: Does pb operation but prints "pa"!
@@ -986,7 +986,7 @@ void pa(t_stack **stack_a, t_stack **stack_b, int print)
     stack_add_front(stack_a, temp);
 
     if (print)
-        write(1, "pa\n", 3);
+        ft_printf("pa\n");
 }
 ```
 

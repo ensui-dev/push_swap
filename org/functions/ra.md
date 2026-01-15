@@ -205,7 +205,7 @@ last->next = first;
 **If print flag is set:**
 ```c
 if (print)
-    write(1, "ra\n", 3);
+    ft_printf("ra\n");
 ```
 
 ---

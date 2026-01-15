@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/14 23:17:09 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/15 01:15:19 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,4 +65,17 @@ static char	**join_all_arguments(int argc, char **argv, int total)
 	}
 	result[result_index] = NULL;
 	return (result);
+}
+
+char	**parse_arguments(int argc, char **argv)
+{
+	int	total;
+
+	total = 0;
+	if (argc < 2)
+		return (NULL);
+	total = count_total_numbers(argc, argv);
+	if (total <= 0)
+		return (NULL);
+	return (join_all_arguments(argc, argv, total));
 }

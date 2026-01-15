@@ -57,6 +57,18 @@ Or as a single quoted string:
 ./push_swap "3 2 1 0"
 ```
 
+Or mixed formats:
+```bash
+./push_swap "3 2" 1 0
+```
+
+**Accepted integer formats:**
+- Standard integers: `42`, `-42`, `+42`
+- Leading zeros: `007` (interpreted as 7)
+- Multiple signs: `--42` (double negative = 42), `---42` (= -42)
+
+These are all mathematically valid integer representations.
+
 #### Output
 The program outputs a series of operations to stdout, one per line:
 ```bash
@@ -204,9 +216,10 @@ push_swap/
 │   └── push_swap_bonus.h      # Bonus header
 ├── srcs/
 │   ├── main.c                 # Entry point and algorithm router
-│   ├── parser.c               # Argument parsing and validation
+│   ├── parser.c               # Argument parsing (parse_arguments + 2 static helpers)
+│   ├── validate.c             # Number validation (is_valid_number, ft_atol, is_int_range, has_duplicates)
 │   ├── error.c                # Error handling
-│   ├── stack_init.c           # Stack initialization
+│   ├── stack_init.c           # Stack initialization (init_stack_a)
 │   ├── stack_utils.c          # Basic stack operations (new, size, last, add)
 │   ├── stack_find.c           # Stack search (min, max, is_sorted)
 │   ├── position.c             # Position assignment
@@ -228,6 +241,9 @@ push_swap/
 │   └── *.c                    # Libft source files
 
 ```
+
+**Note:** Validation functions are in a separate file (`validate.c`) from parsing (`parser.c`)
+to comply with the 42 Norm limit of 5 functions per file.
 
 ---
 

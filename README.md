@@ -57,6 +57,18 @@ Or as a single quoted string:
 ./push_swap "3 2 1 0"
 ```
 
+Or mixed formats:
+```bash
+./push_swap "3 2" 1 0
+```
+
+**Accepted integer formats:**
+- Standard integers: `42`, `-42`, `+42`
+- Leading zeros: `007` (interpreted as 7)
+- Multiple signs: `--42` (double negative = 42), `---42` (= -42)
+
+These are all mathematically valid integer representations.
+
 #### Output
 The program outputs a series of operations to stdout, one per line:
 ```bash
@@ -204,9 +216,10 @@ push_swap/
 │   └── push_swap_bonus.h      # Bonus header
 ├── srcs/
 │   ├── main.c                 # Entry point and algorithm router
-│   ├── parser.c               # Argument parsing and validation
+│   ├── parser.c               # Argument parsing (parse_arguments + 2 static helpers)
+│   ├── validate.c             # Number validation (is_valid_number, ft_atol, is_int_range, has_duplicates)
 │   ├── error.c                # Error handling
-│   ├── stack_init.c           # Stack initialization
+│   ├── stack_init.c           # Stack initialization (init_stack_a)
 │   ├── stack_utils.c          # Basic stack operations (new, size, last, add)
 │   ├── stack_find.c           # Stack search (min, max, is_sorted)
 │   ├── position.c             # Position assignment
@@ -225,9 +238,18 @@ push_swap/
 ├── libft/
 │   ├── Makefile               # Libft build configuration
 │   ├── libft.h                # Libft header
-│   └── *.c                    # Libft source files
+│   ├── *.c                    # Libft source files
+│   └── ft_printf/             # Custom printf implementation
+│       ├── ft_printf.h        # ft_printf header
+│       ├── ft_printf.c        # Main printf function + format handler
+│       ├── ft_printf_char.c   # Character/string output (ft_putchar, ft_putstr)
+│       ├── ft_printf_nbr.c    # Number output (ft_putnbr, ft_putnbr_unsigned)
+│       └── ft_printf_hex.c    # Hex/pointer output (ft_puthex, ft_putptr)
 
 ```
+
+**Note:** Validation functions are in a separate file (`validate.c`) from parsing (`parser.c`)
+to comply with the 42 Norm limit of 5 functions per file.
 
 ---
 
@@ -285,6 +307,26 @@ typedef struct s_stack
 - No memory leaks (verified with valgrind)
 - Proper error handling with cleanup on failures
 - Safe handling of malloc failures
+
+### ft_printf Integration
+
+The project includes a custom `ft_printf` implementation in `libft/ft_printf/` for formatted output:
+
+**Supported format specifiers:**
+- `%c` - Single character
+- `%s` - String
+- `%p` - Pointer address
+- `%d`, `%i` - Signed integer
+- `%u` - Unsigned integer
+- `%x`, `%X` - Hexadecimal (lowercase/uppercase)
+- `%%` - Literal percent sign
+
+**Usage in operations:**
+```c
+// Operations use ft_printf for output
+if (print)
+    ft_printf("sa\n");  // Instead of write(1, "sa\n", 3)
+```
 
 ### Compliance
 - **42 Norm**: Fully compliant with the 42 coding standard

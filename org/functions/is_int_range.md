@@ -695,9 +695,12 @@ Value = 2^31 (2147483648)
 
 ## Location in Project
 
-**File:** `srcs/parser.c` or `srcs/validation.c`
+**File:** `srcs/validate.c`
 **Header:** `includes/push_swap.h`
-**Phase in TODO:** Phase 2.5 (Parsing & Validation - Range Validation)
+**Phase in TODO:** Phase 2.2 (Parsing & Validation - Number Validation)
+
+**Note:** This function is in `validate.c` (not `parser.c`) to comply with 42 Norm's
+5 functions per file limit. Parser.c contains parse_arguments + 2 static helpers.
 
 **Function prototype:**
 ```c

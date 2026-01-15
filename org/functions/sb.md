@@ -171,7 +171,7 @@ second -> [3] -> [7] -> [1] -> NULL  (now second points to first)
 **If print flag is set:**
 ```c
 if (print)
-    write(1, "sb\n", 3);
+    ft_printf("sb\n");
 ```
 
 **When to print:**
@@ -361,7 +361,7 @@ sb(&stack_b, 1);  // Swap top 2 in B
 // Instead of:
 sa(&stack_a, 0);
 sb(&stack_b, 0);
-write(1, "ss\n", 3);
+ft_printf("ss\n");
 
 // The ss function does both swaps + prints "ss" once
 ss(&stack_a, &stack_b, 1);
@@ -491,14 +491,14 @@ void sb(t_stack **stack_b, int print)
 void sb(t_stack **stack_b, int print)
 {
     // ... swap logic ...
-    write(1, "sb\n", 3);  // Ignores print flag!
+    ft_printf("sb\n");  // Ignores print flag!
 }
 ```
 
 **✅ Check print flag:**
 ```c
 if (print)
-    write(1, "sb\n", 3);
+    ft_printf("sb\n");
 ```
 
 ---

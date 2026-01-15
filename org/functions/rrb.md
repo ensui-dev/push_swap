@@ -222,7 +222,7 @@ last -> [1] -> [7] -> [3] -> [9] -> NULL
 **If print flag is set:**
 ```c
 if (print)
-    write(1, "rrb\n", 4);
+    ft_printf("rrb\n");
 ```
 
 ---

@@ -186,7 +186,7 @@ Complete! Elements are swapped!
 
 ```c
 if (print)
-    write(1, "sa\n", 3);
+    ft_printf("sa\n");
 ```
 
 **Why the print parameter?**
@@ -430,7 +430,7 @@ void ss(t_stack **stack_a, t_stack **stack_b, int print)
     sa(stack_a, 0);  // Silent
     sb(stack_b, 0);  // Silent
     if (print)
-        write(1, "ss\n", 3);  // Print once
+        ft_printf("ss\n");  // Print once
 }
 ```
 
@@ -592,7 +592,7 @@ FUNCTION sa_safe(stack_a, print):
 
     // Print
     IF print:
-        WRITE "sa\n"
+        ft_printf("sa\n")
 END FUNCTION
 ```
 
@@ -619,11 +619,11 @@ END FUNCTION
 **Output format:**
 ```c
 ✅ CORRECT:
-write(1, "sa\n", 3);
+ft_printf("sa\n");     // Using custom ft_printf
+write(1, "sa\n", 3);   // Also acceptable
 
 ❌ WRONG:
-printf("sa\n");        // Not allowed (use write)
-ft_putstr("sa\n");     // Okay if ft_putstr uses write
+printf("sa\n");        // Standard library printf not allowed
 write(1, "sa", 2);     // Missing newline
 write(1, "SA\n", 3);   // Wrong case
 ```
@@ -866,7 +866,7 @@ void ss(t_stack **stack_a, t_stack **stack_b, int print)
     sb(stack_b, 0);  // Swap B silently
 
     if (print)
-        write(1, "ss\n", 3);  // Print once
+        ft_printf("ss\n");  // Print once
 }
 ```
 
@@ -976,7 +976,7 @@ void sa(t_stack **stack_a, int print)
     second->next = first;
 
     if (print)
-        write(1, "sa\n", 3);
+        ft_printf("sa\n");
 }
 ```
 

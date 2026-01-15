@@ -95,7 +95,7 @@ sa(&stack_a, 0);  // 0 = don't print "sa"
 sb(&stack_b, 0);  // 0 = don't print "sb"
 
 if (print)
-    write(1, "ss\n", 3);  // Print "ss" once
+    ft_printf("ss\n");  // Print "ss" once
 ```
 
 **Result:**
@@ -139,7 +139,7 @@ sb(&stack_b, 0);  // 0 = silent mode
 **If print flag is set, output "ss":**
 ```c
 if (print)
-    write(1, "ss\n", 3);
+    ft_printf("ss\n");
 ```
 
 **Why this matters:**
@@ -386,7 +386,7 @@ void	ss(t_stack **stack_a, t_stack **stack_b, int print)
     sa(stack_a, 0);
     sb(stack_b, 0);
     if (print)
-        write(1, "ss\n", 3);
+        ft_printf("ss\n");
 }
 ```
 
@@ -432,7 +432,7 @@ void ss(t_stack **stack_a, t_stack **stack_b, int print)
     sa(stack_a, 0);  // Reuse existing logic
     sb(stack_b, 0);
     if (print)
-        write(1, "ss\n", 3);
+        ft_printf("ss\n");
 }
 ```
 
@@ -454,7 +454,7 @@ void ss(t_stack **stack_a, t_stack **stack_b, int print)
     sa(stack_a, 0);  // Silent
     sb(stack_b, 0);  // Silent
     if (print)
-        write(1, "ss\n", 3);  // Print once
+        ft_printf("ss\n");  // Print once
 }
 // Output: "ss\n" - counts as 1 move! ✅
 ```
@@ -466,14 +466,14 @@ void ss(t_stack **stack_a, t_stack **stack_b, int print)
 {
     sa(stack_a, 0);
     sb(stack_b, 0);
-    write(1, "ss\n", 3);  // Always prints!
+    ft_printf("ss\n");  // Always prints!
 }
 ```
 
 **✅ Correct:**
 ```c
 if (print)
-    write(1, "ss\n", 3);  // Only print if requested
+    ft_printf("ss\n");  // Only print if requested
 ```
 
 ### ❌ Mistake 4: Wrong Order
@@ -482,7 +482,7 @@ if (print)
 void ss(t_stack **stack_a, t_stack **stack_b, int print)
 {
     if (print)
-        write(1, "ss\n", 3);
+        ft_printf("ss\n");
     sa(stack_a, 0);  // Operations after print
     sb(stack_b, 0);
 }
@@ -494,7 +494,7 @@ void ss(t_stack **stack_a, t_stack **stack_b, int print)
 sa(stack_a, 0);  // Operations first
 sb(stack_b, 0);
 if (print)
-    write(1, "ss\n", 3);  // Then announce
+    ft_printf("ss\n");  // Then announce
 ```
 
 ### ❌ Mistake 5: Single Pointer Parameters
