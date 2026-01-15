@@ -47,8 +47,10 @@
 - ✅ [has_duplicates](functions/has_duplicates.md) - Check for duplicate values
 
 ### Stack Initialization (Phase 2.4) ✅ COMPLETE
-**File:** `srcs/stack_init.c` (1 function)
-- ✅ [init_stack_a](functions/init_stack_a.md) - Initialize stack A from parsed numbers (signature updated: takes char **numbers)
+**File:** `srcs/stack_init.c` (3 functions)
+- ✅ [init_stack_a](functions/init_stack_a.md) - Initialize stack A from parsed numbers (orchestrates parsing pipeline)
+  - ✅ [append_node](functions/append_node.md) - Static helper: Validate, convert, and add single node
+  - ✅ [build_stack](functions/build_stack.md) - Static helper: Build complete stack from numbers array
 
 ---
 
@@ -162,15 +164,15 @@
 ## Total Functions
 
 - **Core Functions:** 51 (100%) 🎉
-- **Static Helpers:** 2 (100%) 🎉
-- **Total Documented:** 53
+- **Static Helpers:** 4 (100%) 🎉
+- **Total Documented:** 55
 - **Pending:** 0
 - **Status:** ALL PUSH_SWAP FUNCTIONS COMPLETE
 
 ## Completion Summary
 
 - ✅ **Phase 1: Stack Utilities (11/11) - COMPLETE**
-- ✅ **Phase 2: Parsing & Validation (6/6 + 2 helpers) - COMPLETE**
+- ✅ **Phase 2: Parsing & Validation (6/6 + 4 helpers) - COMPLETE**
 - ✅ **Phase 3: Error & Memory (4/4) - COMPLETE**
 - ✅ **Phase 4: Stack Operations (11/11) - COMPLETE**
 - ✅ **Phase 5: Index Normalization (4/4) - COMPLETE**
@@ -178,7 +180,7 @@
 - ✅ **Phase 7: Large Sorting (8/8) - COMPLETE**
 - ✅ **Phase 8: Main Program (2/2) - COMPLETE**
 
-### 🎉 100% DOCUMENTATION COMPLETE (53 FILES) 🎉
+### 🎉 100% DOCUMENTATION COMPLETE (55 FILES) 🎉
 
 ---
 
@@ -206,7 +208,7 @@ Each function documentation includes:
 
 ### ALL 8 Core Phases Documented:
 - ✅ Phase 1: Stack Utilities (11/11)
-- ✅ Phase 2: Parsing & Validation (6/6 + 2 static helpers)
+- ✅ Phase 2: Parsing & Validation (6/6 + 4 static helpers)
 - ✅ Phase 3: Error & Memory (4/4)
 - ✅ Phase 4: Stack Operations (11/11)
 - ✅ Phase 5: Index Normalization (4/4)
@@ -215,8 +217,8 @@ Each function documentation includes:
 - ✅ Phase 8: Main Program (2/2)
 
 ### What You Have:
-✅ **53 comprehensive documentation files** totaling ~700KB
-✅ **51 core functions** + **2 static helper functions**
+✅ **55 comprehensive documentation files** totaling ~750KB
+✅ **51 core functions** + **4 static helper functions**
 ✅ **Complete implementation guide** for entire push_swap project
 ✅ **All algorithms documented**: Small sorts (2-5) and Turk algorithm (large)
 ✅ **Full parsing & validation** system with error handling
@@ -224,12 +226,21 @@ Each function documentation includes:
 ✅ **Static helpers** with dedicated documentation files
 ✅ **Every function** includes: signature, purpose, implementation steps, pseudocode, visual traces, edge cases, complexity analysis, testing strategies, and 42 Norm compliance
 
-### Static Helper Functions (NEW):
+### Static Helper Functions:
+
+**Parser Helpers (srcs/parser.c):**
 - ✅ [count_total_numbers](functions/count_total_numbers.md) - First-pass helper: counts numbers across arguments (~25 KB)
 - ✅ [join_all_arguments](functions/join_all_arguments.md) - Second-pass helper: builds final array (~30 KB)
-- Both documented as static helpers with full implementation details
-- Emphasis on two-pass strategy and memory management
-- Integration with parse_arguments parent function
+
+**Stack Init Helpers (srcs/stack_init.c):**
+- ✅ [append_node](functions/append_node.md) - Validate, convert, and add single node to stack (~20 KB)
+- ✅ [build_stack](functions/build_stack.md) - Build complete stack from numbers array (~22 KB)
+
+All static helpers documented with:
+- Full implementation details and pseudocode
+- Integration with parent functions
+- Memory management patterns
+- 42 Norm compliance strategies
 
 ---
 

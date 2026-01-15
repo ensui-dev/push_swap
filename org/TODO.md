@@ -180,23 +180,23 @@
     - [x] Handle leading zeros
     - [x] Return 1 if valid, 0 if invalid
 
-  - [ ] Write `ft_atol(char *str)` function
-    - [ ] Convert string to long (to check overflow)
-    - [ ] Handle signs
-    - [ ] Parse digit by digit
-    - [ ] Return long value
+  - [x] Write `ft_atol(char *str)` function
+    - [x] Convert string to long (to check overflow)
+    - [x] Handle signs
+    - [x] Parse digit by digit
+    - [x] Return long value
 
-  - [ ] Write `is_int_range(long num)` function
-    - [ ] Check if num is within INT_MIN and INT_MAX
-    - [ ] Return 1 if valid, 0 if overflow
+  - [x] Write `is_int_range(long num)` function
+    - [x] Check if num is within INT_MIN and INT_MAX
+    - [x] Return 1 if valid, 0 if overflow
 
 ### 2.3 Duplicate Detection
-- [ ] Add to `srcs/validate.c`
-  - [ ] Write `has_duplicates(t_stack *stack)` function
-    - [ ] Compare each node with all other nodes
-    - [ ] Check for duplicate values
-    - [ ] Return 1 if duplicates found, 0 otherwise
-    - [ ] Use nested while loops (no for loops - 42 Norm)
+- [x] Add to `srcs/validate.c`
+  - [x] Write `has_duplicates(t_stack *stack)` function
+    - [x] Compare each node with all other nodes
+    - [x] Check for duplicate values
+    - [x] Return 1 if duplicates found, 0 otherwise
+    - [x] Use nested while loops (no for loops - 42 Norm)
 
 ### 2.4 Stack Initialization
 - [ ] Create `srcs/stack_init.c`

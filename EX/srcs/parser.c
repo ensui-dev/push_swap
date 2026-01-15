@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/15 01:15:19 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/15 14:11:58 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,11 @@ static int	count_total_numbers(int argc, char **argv)
 
 static char	**join_all_arguments(int argc, char **argv, int total)
 {
-	char **result;
-	int	i;
-	int	j;
-	int	result_index;
-	char **temp;
+	char	**result;
+	int		i;
+	int		j;
+	int		result_index;
+	char	**temp;
 
 	result = malloc(sizeof(char *) * (total + 1));
 	if (!result)

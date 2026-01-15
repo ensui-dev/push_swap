@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/14 21:09:00 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/15 14:56:22 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,4 +25,22 @@ void	free_split(char **split)
 		i++;
 	}
 	free(split);
+}
+
+void	free_stack(t_stack **stack)
+{
+	t_stack *current;
+	t_stack *temp;
+
+	if (!stack || !*stack)
+		return ;
+	current = *stack;
+	temp = NULL;
+	while (current)
+	{
+		temp = current->next;
+		free(current);
+		current = temp;
+	}
+	*stack = NULL;
 }

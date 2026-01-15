@@ -11,11 +11,17 @@ t_stack *init_stack_a(int argc, char **argv)
 - `int argc` - Number of command line arguments
 - `char **argv` - Array of command line argument strings
 
+**Static Helpers:** Uses `append_node()` and `build_stack()` for 42 Norm compliance
+- See [append_node.md](append_node.md) for node creation helper
+- See [build_stack.md](build_stack.md) for stack building helper
+
 ---
 
 ## Purpose & Use Case
 
 `init_stack_a` is the **orchestrator function** that transforms raw command line input into a validated, ready-to-sort stack. This is the most complex initialization function in push_swap because it coordinates parsing, validation, conversion, and stack building into one cohesive process.
+
+**42 Norm Note:** This function is split into three smaller functions (`init_stack_a`, `build_stack`, `append_node`) to stay under the 25-line limit while maintaining code readability.
 
 ### When You'll Use It
 
@@ -53,35 +59,81 @@ Output: Stack A ready to sort!
 
 ## Deep Dive: How It Works
 
-### The Complete Pipeline
+### The Complete Pipeline (Refactored)
 
 ```
-Phase 1: PARSING
-Input: argc, argv
-↓
-parse_arguments()
-↓
-Output: ["5", "3", "1", "4", "2", NULL]
+┌─────────────────────────────────────────────────────────────┐
+│                    init_stack_a(argc, argv)                 │
+│                    (Main Entry Point)                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Phase 1: PARSING                                            │
+│  Input: argc, argv                                           │
+│  ↓                                                           │
+│  parse_arguments()                                           │
+│  ↓                                                           │
+│  Output: numbers = ["5", "3", "1", "4", "2", NULL]          │
+│                                                              │
+│  Phase 2: BUILD STACK (delegated to helper)                  │
+│  ↓                                                           │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │              build_stack(numbers)                        ││
+│  │              (Static Helper)                             ││
+│  ├─────────────────────────────────────────────────────────┤│
+│  │  For each number in array:                               ││
+│  │  ↓                                                       ││
+│  │  ┌─────────────────────────────────────────────────────┐││
+│  │  │           append_node(&stack, str)                  │││
+│  │  │           (Static Helper)                           │││
+│  │  ├─────────────────────────────────────────────────────┤││
+│  │  │  1. is_valid_number("5")? → YES ✓                   │││
+│  │  │  2. ft_atol("5") → 5L                               │││
+│  │  │  3. is_int_range(5L)? → YES ✓                       │││
+│  │  │  4. stack_new(5) → node                             │││
+│  │  │  5. stack_add_back(&stack, node)                    │││
+│  │  │  6. Return node (success)                           │││
+│  │  └─────────────────────────────────────────────────────┘││
+│  │  ↓                                                       ││
+│  │  has_duplicates(stack)? → NO ✓                          ││
+│  │  ↓                                                       ││
+│  │  Return stack                                            ││
+│  └─────────────────────────────────────────────────────────┘│
+│                                                              │
+│  Phase 3: CLEANUP & RETURN                                   │
+│  if (argc == 2) free_split(numbers)                          │
+│  ↓                                                           │
+│  Return stack (SUCCESS!)                                     │
+└─────────────────────────────────────────────────────────────┘
 
-Phase 2: VALIDATION & CONVERSION (for each string)
-For "5":
-  ├─ is_valid_number("5")? → YES ✓
-  ├─ ft_atol("5") → 5L
-  ├─ is_int_range(5L)? → YES ✓
-  ├─ stack_new(5) → node
-  └─ stack_add_back(&stack, node)
-
-Phase 3: DUPLICATE CHECK
-stack: [5] → [3] → [1] → [4] → [2] → NULL
-↓
-has_duplicates(stack)? → NO ✓
-↓
-Return stack (SUCCESS!)
+Final stack: [5] → [3] → [1] → [4] → [2] → NULL
 ```
 
-### Step-by-Step Implementation
+### Function Hierarchy
 
-#### Step 1: Parse Arguments
+```
+init_stack_a()          ~15 lines (PUBLIC)
+    │
+    ├── parse_arguments()
+    │
+    └── build_stack()   ~18 lines (STATIC)
+            │
+            └── append_node()  ~12 lines (STATIC)
+                    │
+                    ├── is_valid_number()
+                    ├── ft_atol()
+                    ├── is_int_range()
+                    ├── stack_new()
+                    └── stack_add_back()
+```
+
+### Step-by-Step Implementation (Refactored)
+
+**Note:** This function is split into three parts for 42 Norm compliance:
+- `init_stack_a` - Main entry point (~15 lines)
+- `build_stack` - Static helper that builds the stack (~18 lines)
+- `append_node` - Static helper that adds one node (~12 lines)
+
+#### Step 1: Parse Arguments (init_stack_a)
 
 ```c
 char **numbers = parse_arguments(argc, argv);
@@ -96,155 +148,28 @@ if (!numbers)
 
 **Memory note:** If argc == 2, numbers is allocated and must be freed
 
-#### Step 2: Initialize Stack
+#### Step 2: Build Stack (init_stack_a)
 
 ```c
-t_stack *stack_a = NULL;
-int i = 0;
-```
-
-**Starting state:**
-- Empty stack (NULL pointer)
-- Counter for array iteration
-
-#### Step 3: Iterate Through Number Strings
-
-```c
-while (numbers[i])
+stack_a = build_stack(numbers);
+if (!stack_a)
 {
-    // Process each number string
-    i++;
-}
-```
-
-**Array structure:**
-```
-numbers = ["5", "3", "1", "4", "2", NULL]
-           ↑                         ↑
-           i=0                    terminator
-```
-
-#### Step 4: Validate Number Format
-
-```c
-if (!is_valid_number(numbers[i]))
-{
-    free_stack(&stack_a);
     if (argc == 2)
         free_split(numbers);
     return (NULL);
 }
 ```
 
-**What is_valid_number checks:**
-- Optional sign (+/-)
-- Only digits
-- No leading zeros (except "0")
-- Not empty string
+**What happens:**
+- Delegates all stack construction to build_stack helper
+- build_stack handles validation, creation, and duplicate check
+- On failure, clean up numbers array if needed
 
-**Error handling:**
-- Free any nodes already created
-- Free numbers array if allocated
-- Return NULL
-
-#### Step 5: Convert String to Long
-
-```c
-long value = ft_atol(numbers[i]);
-```
-
-**Why long?**
-- int range: -2,147,483,648 to 2,147,483,647
-- Need to detect: 2,147,483,648 (too big!)
-- long can hold bigger values for overflow detection
-- Check range in next step
-
-#### Step 6: Check Integer Range
-
-```c
-if (!is_int_range(value))
-{
-    free_stack(&stack_a);
-    if (argc == 2)
-        free_split(numbers);
-    return (NULL);
-}
-```
-
-**Range check:**
-```
-INT_MIN = -2,147,483,648
-INT_MAX =  2,147,483,647
-
-Valid:   -2147483648 ≤ value ≤ 2147483647
-Invalid: value < INT_MIN or value > INT_MAX
-```
-
-#### Step 7: Create Stack Node
-
-```c
-t_stack *node = stack_new((int)value);
-if (!node)
-{
-    free_stack(&stack_a);
-    if (argc == 2)
-        free_split(numbers);
-    return (NULL);
-}
-```
-
-**What stack_new does:**
-- Allocates memory for node
-- Initializes all fields
-- Returns NULL if malloc fails
-
-**Cast to int:**
-- We know value fits in int (checked in step 6)
-- Safe to cast long to int
-
-#### Step 8: Add Node to Stack
-
-```c
-stack_add_back(&stack_a, node);
-```
-
-**Stack building:**
-```
-First iteration (i=0):
-stack_a = [5] → NULL
-
-Second iteration (i=1):
-stack_a = [5] → [3] → NULL
-
-Third iteration (i=2):
-stack_a = [5] → [3] → [1] → NULL
-
-... and so on
-```
-
-#### Step 9: Check for Duplicates
-
-```c
-if (has_duplicates(stack_a))
-{
-    free_stack(&stack_a);
-    if (argc == 2)
-        free_split(numbers);
-    return (NULL);
-}
-```
-
-**Why check after building:**
-- More efficient to check once at end
-- Could check during building but slower
-- Duplicates are rare in valid input
-
-#### Step 10: Clean Up and Return
+#### Step 3: Clean Up and Return (init_stack_a)
 
 ```c
 if (argc == 2)
     free_split(numbers);
-
 return (stack_a);
 ```
 
@@ -255,15 +180,114 @@ return (stack_a);
 
 ---
 
-## Visual Execution Trace
+### Helper Function: build_stack
+
+#### Step 1: Initialize Empty Stack
+
+```c
+t_stack *stack = NULL;
+int i = 0;
+```
+
+**Starting state:**
+- Empty stack (NULL pointer)
+- Counter for array iteration
+
+#### Step 2: Iterate and Add Each Number
+
+```c
+while (numbers[i])
+{
+    if (!append_node(&stack, numbers[i]))
+    {
+        free_stack(&stack);
+        return (NULL);
+    }
+    i++;
+}
+```
+
+**What happens:**
+- For each number string, call append_node
+- append_node handles validation, conversion, and creation
+- On any failure, free partial stack and return NULL
+
+#### Step 3: Check for Duplicates
+
+```c
+if (has_duplicates(stack))
+{
+    free_stack(&stack);
+    return (NULL);
+}
+return (stack);
+```
+
+**Why check after building:**
+- More efficient to check once at end
+- Could check during building but slower
+- Duplicates are rare in valid input
+
+---
+
+### Helper Function: append_node
+
+#### Step 1: Validate Number Format
+
+```c
+if (!is_valid_number(str))
+    return (NULL);
+```
+
+**What is_valid_number checks:**
+- Optional sign (+/-)
+- Only digits
+- No leading zeros (except "0")
+- Not empty string
+
+#### Step 2: Convert and Check Range
+
+```c
+value = ft_atol(str);
+if (!is_int_range(value))
+    return (NULL);
+```
+
+**Why long?**
+- int range: -2,147,483,648 to 2,147,483,647
+- Need to detect overflow before casting
+- long can hold bigger values for detection
+
+#### Step 3: Create and Add Node
+
+```c
+node = stack_new((int)value);
+if (!node)
+    return (NULL);
+stack_add_back(stack, node);
+return (node);
+```
+
+**What happens:**
+- Create node with validated value
+- Add to end of stack
+- Return node pointer to signal success
+
+---
+
+## Visual Execution Trace (Refactored)
 
 ### Example: Complete Initialization
 
 ```
 Command: ./push_swap "5 3 1 4 2"
 
+╔═══════════════════════════════════════════════════════════════╗
+║                    init_stack_a(2, argv)                       ║
+╚═══════════════════════════════════════════════════════════════╝
+
 ═══════════════════════════════════════
-STEP 1: PARSE ARGUMENTS
+STEP 1: PARSE ARGUMENTS (init_stack_a)
 ═══════════════════════════════════════
 parse_arguments(2, ["./push_swap", "5 3 1 4 2"])
 ↓
@@ -274,115 +298,77 @@ numbers = ["5", "3", "1", "4", "2", NULL]
           allocated              terminator
 
 ═══════════════════════════════════════
-STEP 2: INITIALIZE STACK
+STEP 2: BUILD STACK (init_stack_a calls build_stack)
 ═══════════════════════════════════════
-stack_a = NULL
-i = 0
 
-═══════════════════════════════════════
-ITERATION 1: Process "5"
-═══════════════════════════════════════
-numbers[0] = "5"
+  ╔═════════════════════════════════════════════════════════╗
+  ║              build_stack(numbers)                        ║
+  ╚═════════════════════════════════════════════════════════╝
 
-Validate:
-  is_valid_number("5")? → YES ✓
-  No sign, all digits, valid format
+  Initialize: stack = NULL, i = 0
 
-Convert:
-  ft_atol("5") → 5L
+  ┌─────────────────────────────────────────────────────────┐
+  │ ITERATION 1: append_node(&stack, "5")                   │
+  ├─────────────────────────────────────────────────────────┤
+  │ is_valid_number("5")? → YES ✓                           │
+  │ ft_atol("5") → 5L                                       │
+  │ is_int_range(5L)? → YES ✓                               │
+  │ stack_new(5) → node [value:5, index:-1, next:NULL]      │
+  │ stack_add_back(&stack, node)                            │
+  │ Return: node (success)                                  │
+  │                                                         │
+  │ stack = [5] → NULL                                      │
+  └─────────────────────────────────────────────────────────┘
+  i = 1
 
-Range check:
-  is_int_range(5L)? → YES ✓
-  -2147483648 ≤ 5 ≤ 2147483647
+  ┌─────────────────────────────────────────────────────────┐
+  │ ITERATION 2: append_node(&stack, "3")                   │
+  ├─────────────────────────────────────────────────────────┤
+  │ Validate ✓ → Convert 3L ✓ → Range ✓ → Create → Add      │
+  │ stack = [5] → [3] → NULL                                │
+  └─────────────────────────────────────────────────────────┘
+  i = 2
 
-Create node:
-  stack_new(5)
-  ↓
-  node = [value:5, index:-1, next:NULL]
+  ┌─────────────────────────────────────────────────────────┐
+  │ ITERATION 3: append_node(&stack, "1")                   │
+  ├─────────────────────────────────────────────────────────┤
+  │ Validate ✓ → Convert 1L ✓ → Range ✓ → Create → Add      │
+  │ stack = [5] → [3] → [1] → NULL                          │
+  └─────────────────────────────────────────────────────────┘
+  i = 3
 
-Add to stack:
-  stack_add_back(&stack_a, node)
-  ↓
-  stack_a = [5] → NULL
+  ┌─────────────────────────────────────────────────────────┐
+  │ ITERATION 4: append_node(&stack, "4")                   │
+  ├─────────────────────────────────────────────────────────┤
+  │ Validate ✓ → Convert 4L ✓ → Range ✓ → Create → Add      │
+  │ stack = [5] → [3] → [1] → [4] → NULL                    │
+  └─────────────────────────────────────────────────────────┘
+  i = 4
 
-i++ → i = 1
+  ┌─────────────────────────────────────────────────────────┐
+  │ ITERATION 5: append_node(&stack, "2")                   │
+  ├─────────────────────────────────────────────────────────┤
+  │ Validate ✓ → Convert 2L ✓ → Range ✓ → Create → Add      │
+  │ stack = [5] → [3] → [1] → [4] → [2] → NULL              │
+  └─────────────────────────────────────────────────────────┘
+  i = 5
 
-═══════════════════════════════════════
-ITERATION 2: Process "3"
-═══════════════════════════════════════
-numbers[1] = "3"
+  Loop exit: numbers[5] = NULL
 
-Validate: ✓
-Convert: 3L
-Range check: ✓
-Create node: [value:3, ...]
-Add to stack:
-  stack_a = [5] → [3] → NULL
+  ┌─────────────────────────────────────────────────────────┐
+  │ DUPLICATE CHECK: has_duplicates(stack)                  │
+  ├─────────────────────────────────────────────────────────┤
+  │ 5 vs 3,1,4,2 → all different ✓                          │
+  │ 3 vs 1,4,2   → all different ✓                          │
+  │ 1 vs 4,2     → all different ✓                          │
+  │ 4 vs 2       → all different ✓                          │
+  │ Result: NO DUPLICATES ✓                                 │
+  └─────────────────────────────────────────────────────────┘
 
-i++ → i = 2
-
-═══════════════════════════════════════
-ITERATION 3: Process "1"
-═══════════════════════════════════════
-numbers[2] = "1"
-
-Validate: ✓
-Convert: 1L
-Range check: ✓
-Create node: [value:1, ...]
-Add to stack:
-  stack_a = [5] → [3] → [1] → NULL
-
-i++ → i = 3
-
-═══════════════════════════════════════
-ITERATION 4: Process "4"
-═══════════════════════════════════════
-numbers[3] = "4"
-
-Validate: ✓
-Convert: 4L
-Range check: ✓
-Create node: [value:4, ...]
-Add to stack:
-  stack_a = [5] → [3] → [1] → [4] → NULL
-
-i++ → i = 4
+  Return: stack = [5] → [3] → [1] → [4] → [2] → NULL
 
 ═══════════════════════════════════════
-ITERATION 5: Process "2"
-═══════════════════════════════════════
-numbers[4] = "2"
-
-Validate: ✓
-Convert: 2L
-Range check: ✓
-Create node: [value:2, ...]
-Add to stack:
-  stack_a = [5] → [3] → [1] → [4] → [2] → NULL
-
-i++ → i = 5
-
-═══════════════════════════════════════
-STEP 3: END OF ARRAY
-═══════════════════════════════════════
-numbers[5] = NULL
-Loop exits
-
-═══════════════════════════════════════
-STEP 4: CHECK DUPLICATES
-═══════════════════════════════════════
-has_duplicates(stack_a)?
-  Compare all pairs:
-  5 vs 3,1,4,2 → all different ✓
-  3 vs 1,4,2   → all different ✓
-  1 vs 4,2     → all different ✓
-  4 vs 2       → all different ✓
-
-Result: NO DUPLICATES ✓
-
-═══════════════════════════════════════
-STEP 5: CLEANUP
+STEP 3: CLEANUP & RETURN (init_stack_a)
 ═══════════════════════════════════════
 argc == 2, so free numbers array:
   free_split(numbers)
@@ -390,15 +376,12 @@ argc == 2, so free numbers array:
   free("5"), free("3"), free("1"), free("4"), free("2")
   free(array)
 
-═══════════════════════════════════════
-STEP 6: RETURN SUCCESS
-═══════════════════════════════════════
 return stack_a
 
-Final stack:
-[5] → [3] → [1] → [4] → [2] → NULL
-
-Ready to sort! ✅
+╔═══════════════════════════════════════════════════════════════╗
+║ Final stack: [5] → [3] → [1] → [4] → [2] → NULL               ║
+║ Ready to sort! ✅                                              ║
+╚═══════════════════════════════════════════════════════════════╝
 ```
 
 ### Example: Error During Validation
@@ -406,55 +389,74 @@ Ready to sort! ✅
 ```
 Command: ./push_swap "5 3 abc 4 2"
 
+╔═══════════════════════════════════════════════════════════════╗
+║                    init_stack_a(2, argv)                       ║
+╚═══════════════════════════════════════════════════════════════╝
+
 ═══════════════════════════════════════
-STEP 1: PARSE
+STEP 1: PARSE (init_stack_a)
 ═══════════════════════════════════════
 numbers = ["5", "3", "abc", "4", "2", NULL]
 
 ═══════════════════════════════════════
-STEP 2: INITIALIZE
+STEP 2: BUILD STACK (init_stack_a calls build_stack)
 ═══════════════════════════════════════
-stack_a = NULL
-i = 0
+
+  ╔═════════════════════════════════════════════════════════╗
+  ║              build_stack(numbers)                        ║
+  ╚═════════════════════════════════════════════════════════╝
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ ITERATION 1: append_node(&stack, "5") → SUCCESS         │
+  │ stack = [5] → NULL                                      │
+  └─────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ ITERATION 2: append_node(&stack, "3") → SUCCESS         │
+  │ stack = [5] → [3] → NULL                                │
+  └─────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ ITERATION 3: append_node(&stack, "abc") → FAIL!         │
+  ├─────────────────────────────────────────────────────────┤
+  │ is_valid_number("abc")? → NO ✗                          │
+  │ Contains non-digit characters!                          │
+  │ Return: NULL                                            │
+  └─────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ ERROR HANDLING in build_stack:                          │
+  ├─────────────────────────────────────────────────────────┤
+  │ append_node returned NULL                               │
+  │ free_stack(&stack) → free [5], free [3]                 │
+  │ Return: NULL                                            │
+  └─────────────────────────────────────────────────────────┘
 
 ═══════════════════════════════════════
-ITERATION 1: "5" ✓
+STEP 3: ERROR HANDLING (init_stack_a)
 ═══════════════════════════════════════
-stack_a = [5] → NULL
-i = 1
+build_stack returned NULL
 
-═══════════════════════════════════════
-ITERATION 2: "3" ✓
-═══════════════════════════════════════
-stack_a = [5] → [3] → NULL
-i = 2
-
-═══════════════════════════════════════
-ITERATION 3: "abc" ✗ ERROR!
-═══════════════════════════════════════
-numbers[2] = "abc"
-
-Validate:
-  is_valid_number("abc")? → NO ✗
-  Contains non-digit characters!
-
-Error handling:
-  free_stack(&stack_a)
-    ↓ free([5]), free([3])
+argc == 2, so free numbers array:
   free_split(numbers)
-    ↓ free all strings and array
-  return (NULL)
+  ↓
+  free all strings and array
 
-═══════════════════════════════════════
-RESULT: NULL (Error)
-═══════════════════════════════════════
-Caller receives NULL
-Should print "Error" and exit
+return (NULL)
+
+╔═══════════════════════════════════════════════════════════════╗
+║ RESULT: NULL (Error)                                           ║
+║ Caller receives NULL → should print "Error" and exit          ║
+╚═══════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## Complete Algorithm Pseudocode
+## Complete Algorithm Pseudocode (Refactored)
+
+**Note:** Split into three functions for 42 Norm compliance.
+
+### Main Function: init_stack_a
 
 ```
 FUNCTION init_stack_a(argc, argv):
@@ -463,55 +465,69 @@ FUNCTION init_stack_a(argc, argv):
     IF numbers is NULL:
         RETURN NULL
 
-    // Step 2: Initialize empty stack
-    stack_a = NULL
-    i = 0
-
-    // Step 3: Process each number string
-    WHILE numbers[i] is not NULL:
-        // Validate format
-        IF NOT is_valid_number(numbers[i]):
-            free_stack(&stack_a)
-            IF argc == 2:
-                free_split(numbers)
-            RETURN NULL
-
-        // Convert to long
-        value = ft_atol(numbers[i])
-
-        // Check integer range
-        IF NOT is_int_range(value):
-            free_stack(&stack_a)
-            IF argc == 2:
-                free_split(numbers)
-            RETURN NULL
-
-        // Create node
-        node = stack_new((int)value)
-        IF node is NULL:
-            free_stack(&stack_a)
-            IF argc == 2:
-                free_split(numbers)
-            RETURN NULL
-
-        // Add to stack
-        stack_add_back(&stack_a, node)
-
-        i = i + 1
-
-    // Step 4: Check for duplicates
-    IF has_duplicates(stack_a):
-        free_stack(&stack_a)
+    // Step 2: Build stack using helper
+    stack_a = build_stack(numbers)
+    IF stack_a is NULL:
         IF argc == 2:
             free_split(numbers)
         RETURN NULL
 
-    // Step 5: Clean up temporary memory
+    // Step 3: Clean up and return
     IF argc == 2:
         free_split(numbers)
-
-    // Step 6: Return initialized stack
     RETURN stack_a
+END FUNCTION
+```
+
+### Static Helper: build_stack
+
+```
+FUNCTION build_stack(numbers):
+    // Step 1: Initialize empty stack
+    stack = NULL
+    i = 0
+
+    // Step 2: Process each number string
+    WHILE numbers[i] is not NULL:
+        // Validate, convert, create, and add node
+        IF append_node(&stack, numbers[i]) is NULL:
+            free_stack(&stack)
+            RETURN NULL
+        i = i + 1
+
+    // Step 3: Check for duplicates
+    IF has_duplicates(stack):
+        free_stack(&stack)
+        RETURN NULL
+
+    // Step 4: Return completed stack
+    RETURN stack
+END FUNCTION
+```
+
+### Static Helper: append_node
+
+```
+FUNCTION append_node(stack, str):
+    // Step 1: Validate format
+    IF NOT is_valid_number(str):
+        RETURN NULL
+
+    // Step 2: Convert to long
+    value = ft_atol(str)
+
+    // Step 3: Check integer range
+    IF NOT is_int_range(value):
+        RETURN NULL
+
+    // Step 4: Create node
+    node = stack_new((int)value)
+    IF node is NULL:
+        RETURN NULL
+
+    // Step 5: Add to stack and return
+    stack_add_back(stack, node)
+    RETURN node
 END FUNCTION
 ```
 
@@ -707,34 +723,69 @@ int main(int argc, char **argv)
 
 ### Norm Compliance
 
-✅ **Function length:** ~35-40 lines (may need helper functions)
-⚠️ **Complexity:** High cyclomatic complexity, consider splitting
-✅ **Single responsibility:** Initializes stack (but does many sub-tasks)
-✅ **Error handling:** Comprehensive cleanup on all errors
-✅ **Memory management:** No leaks on any path
+| Requirement | Status | Notes |
+|-------------|--------|-------|
+| Function length | Split into helpers | Each function under 25 lines |
+| Static helpers | build_stack, append_node | Encapsulate sub-tasks |
+| Single responsibility | Each function has one job | Clean separation |
+| Error handling | Comprehensive | Cleanup on all error paths |
+| Memory management | No leaks | All paths properly cleaned up |
+| Max parameters | Varies | All within limits |
 
-### Refactoring Suggestion
+### Required Refactoring: Split into Helper Functions
 
-To meet norm, split into helper functions:
+To meet 42 Norm requirements, `init_stack_a` MUST be split into smaller functions:
+
+**File Structure in `stack_init.c`:**
+```
+1. static t_stack *append_node(t_stack **stack, char *str)
+   - Validates, converts, creates, and adds one node
+   - Returns node on success, NULL on failure
+
+2. static t_stack *build_stack(char **numbers)
+   - Iterates through numbers array
+   - Calls append_node for each number
+   - Returns completed stack or NULL on error
+
+3. t_stack *init_stack_a(int argc, char **argv)
+   - Main entry point (PUBLIC)
+   - Calls parse_arguments and build_stack
+   - Handles memory cleanup
+```
+
+### Static Helper 1: append_node
+
+**Purpose:** Validate, convert, create, and add a single node to the stack.
 
 ```c
-// Main function
-t_stack *init_stack_a(int argc, char **argv)
+static t_stack *append_node(t_stack **stack, char *str)
 {
-    char    **numbers;
-    t_stack *stack_a;
+    long    value;
+    t_stack *node;
 
-    numbers = parse_arguments(argc, argv);
-    if (!numbers)
+    if (!is_valid_number(str))
         return (NULL);
-    stack_a = build_stack(numbers, argc);
-    if (argc == 2)
-        free_split(numbers);
-    return (stack_a);
+    value = ft_atol(str);
+    if (!is_int_range(value))
+        return (NULL);
+    node = stack_new((int)value);
+    if (!node)
+        return (NULL);
+    stack_add_back(stack, node);
+    return (node);
 }
+```
 
-// Helper function
-static t_stack *build_stack(char **numbers, int argc)
+**Line count:** ~12 lines
+
+See [append_node.md](append_node.md) for complete documentation.
+
+### Static Helper 2: build_stack
+
+**Purpose:** Build complete stack from numbers array, validate no duplicates.
+
+```c
+static t_stack *build_stack(char **numbers)
 {
     t_stack *stack;
     int     i;
@@ -743,8 +794,11 @@ static t_stack *build_stack(char **numbers, int argc)
     i = 0;
     while (numbers[i])
     {
-        if (!add_number_to_stack(&stack, numbers[i], argc, numbers))
+        if (!append_node(&stack, numbers[i]))
+        {
+            free_stack(&stack);
             return (NULL);
+        }
         i++;
     }
     if (has_duplicates(stack))
@@ -754,26 +808,49 @@ static t_stack *build_stack(char **numbers, int argc)
     }
     return (stack);
 }
+```
 
-// Helper function
-static int add_number_to_stack(t_stack **stack, char *str,
-                               int argc, char **numbers)
+**Line count:** ~18 lines
+
+See [build_stack.md](build_stack.md) for complete documentation.
+
+### Main Function: init_stack_a (Refactored)
+
+**Purpose:** Entry point - orchestrate parsing and stack building.
+
+```c
+t_stack *init_stack_a(int argc, char **argv)
 {
-    long     value;
-    t_stack  *node;
+    char    **numbers;
+    t_stack *stack_a;
 
-    if (!is_valid_number(str))
-        return (cleanup_and_fail(stack, numbers, argc));
-    value = ft_atol(str);
-    if (!is_int_range(value))
-        return (cleanup_and_fail(stack, numbers, argc));
-    node = stack_new((int)value);
-    if (!node)
-        return (cleanup_and_fail(stack, numbers, argc));
-    stack_add_back(stack, node);
-    return (1);
+    numbers = parse_arguments(argc, argv);
+    if (!numbers)
+        return (NULL);
+    stack_a = build_stack(numbers);
+    if (!stack_a)
+    {
+        if (argc == 2)
+            free_split(numbers);
+        return (NULL);
+    }
+    if (argc == 2)
+        free_split(numbers);
+    return (stack_a);
 }
 ```
+
+**Line count:** ~15 lines
+
+### Line Count Summary
+
+| Function | Lines | Norm Limit | Status |
+|----------|-------|------------|--------|
+| append_node | ~12 | 25 | PASS |
+| build_stack | ~18 | 25 | PASS |
+| init_stack_a | ~15 | 25 | PASS |
+
+**Total functions in stack_init.c:** 3 (under 5 function limit per file)
 
 ---
 

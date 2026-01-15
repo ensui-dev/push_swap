@@ -1,9 +1,9 @@
 # 🎉 Push_swap Documentation - COMPLETE! 🎉
 
 **Project:** push_swap (42 School)
-**Completion Date:** January 14, 2026
+**Completion Date:** January 15, 2026
 **Documentation Status:** 100% COMPLETE
-**Total Files:** 53 comprehensive documentation files
+**Total Files:** 55 comprehensive documentation files
 
 ---
 
@@ -12,10 +12,10 @@
 | Metric | Count |
 |--------|-------|
 | **Core Functions** | 51 |
-| **Static Helper Functions** | 2 |
-| **Total Documented Functions** | 53 |
-| **Total Documentation Size** | ~700 KB |
-| **Average Size per Function** | ~13.2 KB |
+| **Static Helper Functions** | 4 |
+| **Total Documented Functions** | 55 |
+| **Total Documentation Size** | ~750 KB |
+| **Average Size per Function** | ~13.6 KB |
 | **Phases Completed** | 8/8 (100%) |
 | **Completion Percentage** | 100% |
 
@@ -24,7 +24,7 @@
 ## 🏆 All Phases Complete
 
 ### ✅ Phase 1: Stack Utility Functions (11 functions)
-### ✅ Phase 2: Parsing & Validation (6 + 2 helpers)
+### ✅ Phase 2: Parsing & Validation (6 + 4 helpers)
 ### ✅ Phase 3: Error Handling & Memory (4 functions)
 ### ✅ Phase 4: Stack Operations (11 functions)
 ### ✅ Phase 5: Index Normalization (4 functions)
@@ -75,5 +75,19 @@ See [DOCUMENTATION_STATUS.md](DOCUMENTATION_STATUS.md) for detailed breakdown.
 
 ---
 
-*Documentation completed: January 14, 2026*
+## 📝 Static Helper Functions
+
+### Parser Helpers (srcs/parser.c):
+- **count_total_numbers** - First-pass counting for two-pass parsing strategy
+- **join_all_arguments** - Second-pass array building
+
+### Stack Init Helpers (srcs/stack_init.c):
+- **append_node** - Validate, convert, and add single node to stack
+- **build_stack** - Build complete stack from numbers array
+
+All helpers enable 42 Norm compliance by keeping functions under 25 lines.
+
+---
+
+*Documentation completed: January 15, 2026*
 *Ready for: Full implementation of 42 push_swap project*

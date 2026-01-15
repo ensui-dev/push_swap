@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/14 18:30:55 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/15 14:14:05 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ int	find_max_index(t_stack *stack)
 	}
 	return (-1);
 }
+
 int	is_sorted(t_stack *stack)
 {
 	if (!stack || !stack->next)

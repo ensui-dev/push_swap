@@ -1,13 +1,13 @@
 # Push_swap Function Documentation - Status Report
 
-**Last Updated**: 2026-01-14
-**Total Functions Documented**: 53 out of 53 (100% COMPLETE) 🎉
-**Core Functions**: 51 | **Static Helpers**: 2
-**Total Documentation Size**: ~700 KB
+**Last Updated**: 2026-01-15
+**Total Functions Documented**: 55 out of 55 (100% COMPLETE) 🎉
+**Core Functions**: 51 | **Static Helpers**: 4
+**Total Documentation Size**: ~750 KB
 
 ---
 
-## 🎉 COMPLETE DOCUMENTATION - ALL 53 FUNCTIONS 🎉
+## 🎉 COMPLETE DOCUMENTATION - ALL 55 FUNCTIONS 🎉
 
 ### Phase 1: Stack Utility Functions (11/11) ✅ COMPLETE
 1. ✅ **[stack_new.md](functions/stack_new.md)** (13 KB)
@@ -98,11 +98,14 @@
     - Uses nested loop comparison O(n²)
     - Returns 1 if duplicates found
 
-#### Stack Initialization - File: `srcs/stack_init.c` (1 function)
+#### Stack Initialization - File: `srcs/stack_init.c` (3 functions)
 13. ✅ **[init_stack_a.md](functions/init_stack_a.md)** (~23 KB)
     - Initializes stack A from parsed string array
     - Complete validation and node creation
     - Orchestrates parsing pipeline
+    - Uses two static helpers (documented separately):
+      - **[append_node.md](functions/append_node.md)** (~20 KB) - Validate, convert, add single node
+      - **[build_stack.md](functions/build_stack.md)** (~22 KB) - Build complete stack from array
 
 ### Phase 3: Error Handling & Memory (4/4) ✅ COMPLETE
 
@@ -274,10 +277,12 @@
 - ✅ is_int_range
 - ✅ has_duplicates
 
-**File: `srcs/stack_init.c`** (1 function)
+**File: `srcs/stack_init.c`** (3 functions)
 - ✅ init_stack_a
+- ✅ append_node (static helper - dedicated doc) - NEW
+- ✅ build_stack (static helper - dedicated doc) - NEW
 
-**Progress: 6/6 core + 2/2 helpers (100%)** ✅
+**Progress: 6/6 core + 4/4 helpers (100%)** ✅
 
 ### Phase 3: Error Handling & Memory ✅ COMPLETE
 - ✅ print_error
@@ -344,11 +349,11 @@
 | Metric | Value |
 |--------|-------|
 | **Core Functions** | 51 functions |
-| **Static Helpers** | 2 (count_total_numbers, join_all_arguments) |
-| **Total Documented** | 53 functions (100%) 🎉 |
+| **Static Helpers** | 4 (count_total_numbers, join_all_arguments, append_node, build_stack) |
+| **Total Documented** | 55 functions (100%) 🎉 |
 | **Completion** | 100% COMPLETE |
-| **Total Doc Size** | ~700 KB |
-| **Avg Doc Size** | ~13.2 KB/function |
+| **Total Doc Size** | ~750 KB |
+| **Avg Doc Size** | ~13.6 KB/function |
 | **Phases Complete** | 8/8 (All phases) |
 | **Helper Docs** | Full documentation for static helpers |
 
@@ -356,16 +361,19 @@
 
 ## 🎉 100% COMPLETE - YOU CAN BUILD EVERYTHING! 🎉
 
-### ALL 8 Phases Fully Documented (53 functions):
+### ALL 8 Phases Fully Documented (55 functions):
 
 #### ✅ Phase 1: Stack Utilities (11/11) - COMPLETE
 - All basic operations, find functions, positioning, validation
 
-#### ✅ Phase 2: Parsing & Validation (6/6 + 2 helpers) - COMPLETE
+#### ✅ Phase 2: Parsing & Validation (6/6 + 4 helpers) - COMPLETE
 - parse_arguments with dedicated helper documentation
 - count_total_numbers (static helper - full doc)
 - join_all_arguments (static helper - full doc)
-- init_stack_a, is_valid_number, ft_atol, is_int_range, has_duplicates
+- init_stack_a with dedicated helper documentation
+- append_node (static helper - full doc) - NEW
+- build_stack (static helper - full doc) - NEW
+- is_valid_number, ft_atol, is_int_range, has_duplicates
 
 #### ✅ Phase 3: Error & Memory (4/4) - COMPLETE
 - print_error, error_exit, free_stack, free_split
@@ -387,7 +395,7 @@
 
 ### What You Can Build RIGHT NOW:
 
-With ALL 53 functions documented (51 core + 2 helpers), you can:
+With ALL 55 functions documented (51 core + 4 helpers), you can:
 1. ✅ **Build the COMPLETE push_swap program**
 2. ✅ **Parse and validate ALL input formats**
 3. ✅ **Sort 2-5 elements OPTIMALLY**
@@ -403,11 +411,12 @@ With ALL 53 functions documented (51 core + 2 helpers), you can:
 ### Special Features Documented:
 - ✨ Static helper functions with FULL separate documentation
 - ✨ Two-pass parsing strategy (count → allocate → fill)
+- ✨ Refactored init_stack_a with append_node + build_stack helpers
 - ✨ Complete Turk algorithm with optimization
 - ✨ Index normalization for large numbers
 - ✨ Error handling and memory management
 - ✨ String ownership transfer patterns
-- ✨ 42 Norm compliance throughout
+- ✨ 42 Norm compliance throughout (all functions under 25 lines)
 
 ---
 

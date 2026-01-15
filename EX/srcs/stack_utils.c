@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/14 11:29:29 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/15 14:11:16 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,12 @@ t_stack	*stack_new(int value)
 	return (new_node);
 }
 
-int		stack_size(t_stack *stack)
+int	stack_size(t_stack *stack)
 {
 	int		size;
 	t_stack	*temp;
-	
-	if(!stack)
+
+	if (!stack)
 		return (0);
 	temp = stack;
 	size = 0;
@@ -49,13 +49,13 @@ int		stack_size(t_stack *stack)
 t_stack	*stack_last(t_stack *stack)
 {
 	t_stack	*temp;
-	
-	if(!stack)
-		return(NULL);
+
+	if (!stack)
+		return (NULL);
 	temp = stack;
 	while (temp->next)
 		temp = temp->next;
-	return (temp);	
+	return (temp);
 }
 
 void	stack_add_back(t_stack **stack, t_stack *new)

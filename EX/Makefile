@@ -6,7 +6,7 @@
 #    By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/14 10:51:10 by mju-ferr          #+#    #+#              #
-#    Updated: 2026/01/14 10:51:47 by mju-ferr         ###   ########.fr        #
+#    Updated: 2026/01/15 12:40:30 by mju-ferr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,7 +60,8 @@ SRCS = main.c \
        sort_small.c \
        sort_large.c \
        cost.c \
-       free.c
+       free.c \
+	   validate.c
 
 # Bonus source files (checker program)
 BONUS_SRCS = checker_bonus.c \
