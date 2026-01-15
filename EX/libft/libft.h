@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/14 21:54:55 by mju-ferr          #+#    #+#             */
-/*   Updated: 2025/10/20 20:17:12 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/15 01:45:11 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # include <ctype.h>
 # include <fcntl.h>
 # include <string.h>
+# include "ft_printf/ft_printf.h"
 
 typedef struct s_list
 {

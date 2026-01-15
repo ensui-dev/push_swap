@@ -6,7 +6,7 @@
 #    By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/14 15:23:43 by mju-ferr          #+#    #+#              #
-#    Updated: 2025/10/24 19:11:41 by mju-ferr         ###   ########.fr        #
+#    Updated: 2026/01/15 01:29:15 by mju-ferr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,27 +24,34 @@ BONUS = ft_lstadd_back.c ft_lstadd_front.c ft_lstclear.c \
 ft_lstdelone.c ft_lstiter.c ft_lstlast.c \
 ft_lstmap.c ft_lstnew.c ft_lstsize.c
 
+FT_PRINTF_DIR = ft_printf
+FT_PRINTF_SRCS = $(FT_PRINTF_DIR)/ft_printf.c \
+				$(FT_PRINTF_DIR)/ft_printf_char.c \
+				$(FT_PRINTF_DIR)/ft_printf_nbr.c \
+				$(FT_PRINTF_DIR)/ft_printf_hex.c
+
 OBJS = $(SRCS:.c=.o)
 BONUS_OBJS = $(BONUS:.c=.o)
+FT_PRINTF_OBJS = $(FT_PRINTF_SRCS:.c=.o)
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -I.
+CFLAGS = -Wall -Wextra -Werror -I. -I$(FT_PRINTF_DIR)
 RM = rm -f
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	ar rcs $(NAME) $(OBJS)
+$(NAME): $(OBJS) $(FT_PRINTF_OBJS)
+	ar rcs $(NAME) $(OBJS) $(FT_PRINTF_OBJS)
 
 bonus: .bonus
 
-.bonus: $(OBJS) $(BONUS_OBJS)
+.bonus: $(OBJS) $(BONUS_OBJS) $(FT_PRINTF_OBJS)
 	@touch .bonus
-	ar rcs $(NAME) $(OBJS) $(BONUS_OBJS)
+	ar rcs $(NAME) $(OBJS) $(BONUS_OBJS) $(FT_PRINTF_OBJS)
 
 clean:
 	@$(RM) .bonus
-	$(RM) $(OBJS) $(BONUS_OBJS)
+	$(RM) $(OBJS) $(BONUS_OBJS) $(FT_PRINTF_OBJS)
 
 fclean: clean
 	$(RM) $(NAME)
