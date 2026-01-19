@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/19 14:29:49 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/19 16:39:29 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,3 +45,12 @@ void	sb(t_stack **stack_b, int print)
 		ft_printf("sb\n");
 	return ;
 }
+
+void	ss(t_stack **stack_a, t_stack **stack_b, int print)
+{
+	sa(&stack_a, print = 0);
+	sa(&stack_b, print = 0);
+	if (print == 1)
+		ft_printf("ss\n");
+}
+

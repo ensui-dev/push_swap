@@ -277,10 +277,10 @@
       - [x] Set second->next to first (link second to first)
       - [x] Update stack head to second (complete swap)
 
-  - [ ] Write `sb(t_stack **stack_b, int print)` function
-    - [ ] Same as sa but for stack B
-    - [ ] Handle edge cases (NULL double pointer, empty stack, 1 element)
-    - [ ] If print=1, write "sb\n" to stdout
+  - [x] Write `sb(t_stack **stack_b, int print)` function
+    - [x] Same as sa but for stack B
+    - [x] Handle edge cases (NULL double pointer, empty stack, 1 element)
+    - [x] If print=1, write "sb\n" to stdout
 
   - [ ] Write `ss(t_stack **stack_a, t_stack **stack_b, int print)` function
     - [ ] Call sa with print=0
