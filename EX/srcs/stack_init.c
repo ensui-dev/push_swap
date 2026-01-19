@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/15 17:08:31 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/19 13:37:35 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,47 +14,63 @@
 
 static t_stack	*append_node(t_stack **stack, char *str)
 {
-	int		value;
+	long	value;
 	t_stack	*node;
 
 	if (!is_valid_number(str))
 		return (NULL);
-	value = ft_atoi(str);
+	value = ft_atol(str);
 	if (!is_int_range(value))
 		return (NULL);
-	
+	node = stack_new((int)value);
+	if (!node)
+		return (NULL);
+	stack_add_back(stack, node);
+	return (node);
+}
+
+static t_stack *build_stack(char **numbers)
+{
+	t_stack	*stack;
+	int		i;
+
+	stack = NULL;
+	i = 0;
+	while (numbers[i])
+	{
+		if (!append_node(&stack, numbers[i]))
+		{
+			free_stack(&stack);
+			return (NULL);
+		}
+		i++;
+	}
+	if (has_duplicates(stack))
+	{
+		free_stack(&stack);
+		return (NULL);
+	}
+	return (stack);
 }
 
 t_stack	*init_stack_a(int argc, char **argv)
 {
 	char	**numbers;
 	t_stack	*stack_a;
-	int		i;
-	int		value;
 
+	stack_a = NULL;
+	numbers = NULL;
 	numbers = parse_arguments(argc, argv);
 	if (!numbers)
 		return (NULL);
-	stack_a = NULL;
-	i = 0;
-	value = 0;
-	while (numbers[i])
+	stack_a = build_stack(numbers);
+	if (!stack_a)
 	{
-		if (!(is_valid_number(numbers[i])))
-		{
-			free_stack(&stack_a);
-			if (argc == 2)
-				free_split(numbers);
-			return (NULL);
-		}
-		value = ft_atoi(numbers[i]);
-		if (!(is_int_range(value)))
-		{
-			free_stack(&stack_a);
-			if (argc == 2)
-				free_split(numbers);
-			return (NULL);
-		}
-		i++;
+		if(argc == 2)
+			free_split(numbers);
+		return (NULL);
 	}
+	if (argc == 2)
+		free_split(numbers);
+	return (stack_a);
 }

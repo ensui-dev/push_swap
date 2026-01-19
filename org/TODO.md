@@ -199,43 +199,60 @@
     - [x] Use nested while loops (no for loops - 42 Norm)
 
 ### 2.4 Stack Initialization
-- [ ] Create `srcs/stack_init.c`
-  - [ ] Write `init_stack_a(char **numbers)` function
-    - [ ] **UPDATED SIGNATURE:** Now takes `char **numbers` (already parsed)
-    - [ ] Main() calls parse_arguments and passes result to this function
-    - [ ] Validate each number string:
-      - [ ] Check if valid number format (is_valid_number)
-      - [ ] Convert to long (ft_atol)
-      - [ ] Check if within int range (is_int_range)
-    - [ ] Create stack node for each valid number
-    - [ ] Add node to stack A (stack_add_back)
-    - [ ] Check for duplicates (has_duplicates)
-    - [ ] Return stack A or NULL on error
-    - [ ] **IMPORTANT:** Does NOT free numbers array (caller's responsibility)
+- [x] Create `srcs/stack_init.c` (3 functions for 42 Norm compliance)
+
+  - [x] Write `append_node(t_stack **stack, char *str)` **static helper** (~12 lines)
+    - [x] Validate single number string format (is_valid_number)
+    - [x] Convert string to long (ft_atol)
+    - [x] Check if value is within int range (is_int_range)
+    - [x] Create stack node (stack_new) with cast to int
+    - [x] Add node to stack (stack_add_back)
+    - [x] Return node pointer on success, NULL on any failure
+    - [x] **NOTE:** Stack remains unchanged if validation fails
+
+  - [x] Write `build_stack(char **numbers)` **static helper** (~18 lines)
+    - [x] Initialize empty stack (NULL)
+    - [x] Iterate through numbers array (while numbers[i])
+    - [x] Call append_node for each number string
+    - [x] On append_node failure: free_stack and return NULL
+    - [x] After loop: check for duplicates (has_duplicates)
+    - [x] If duplicates found: free_stack and return NULL
+    - [x] Return completed stack on success
+
+  - [x] Write `init_stack_a(int argc, char **argv)` **main function** (~15 lines)
+    - [x] Call parse_arguments(argc, argv) to get numbers array
+    - [x] If parse fails (NULL): return NULL
+    - [x] Call build_stack(numbers) to construct stack
+    - [x] If build fails (NULL):
+      - [x] Free numbers array if argc == 2 (allocated by ft_split)
+      - [x] Return NULL
+    - [x] On success: free numbers array if argc == 2
+    - [x] Return completed stack_a
+    - [x] **IMPORTANT:** Memory ownership - numbers is freed here, not by caller
 
 ---
 
 ## Phase 3: Error Handling and Memory Management
 
 ### 3.1 Error Handling
-- [ ] Create `srcs/error.c`
-  - [ ] Write `print_error()` function
-    - [ ] Write "Error\n" to stderr (fd = 2)
-    - [ ] Use `write(2, "Error\n", 6)`
+- [x] Create `srcs/error.c`
+  - [x] Write `print_error()` function
+    - [x] Write "Error\n" to stderr (fd = 2)
+    - [x] Use `write(2, "Error\n", 6)`
 
-  - [ ] Write `error_exit(t_stack **stack_a, t_stack **stack_b)` function
-    - [ ] Call print_error()
-    - [ ] Free stack A if allocated
-    - [ ] Free stack B if allocated
-    - [ ] Exit program with `exit(1)`
+  - [x] Write `error_exit(t_stack **stack_a, t_stack **stack_b)` function
+    - [x] Call print_error()
+    - [x] Free stack A if allocated
+    - [x] Free stack B if allocated
+    - [x] Exit program with `exit(1)`
 
 ### 3.2 Memory Cleanup
-- [ ] Create `srcs/free.c`
-  - [ ] Write `free_stack(t_stack **stack)` function
-    - [ ] Iterate through entire stack
-    - [ ] Free each node
-    - [ ] Set *stack to NULL after freeing all
-    - [ ] Handle NULL pointer (do nothing)
+- [x] Create `srcs/free.c`
+  - [x] Write `free_stack(t_stack **stack)` function
+    - [x] Iterate through entire stack
+    - [x] Free each node
+    - [x] Set *stack to NULL after freeing all
+    - [x] Handle NULL pointer (do nothing)
 
   - [x] Write `free_split(char **split)` function
     - [x] Free each string in split array
@@ -247,17 +264,17 @@
 ## Phase 4: Stack Operations Implementation
 
 ### 4.1 Swap Operations
-- [ ] Create `srcs/operations_swap.c`
-  - [ ] Write `sa(t_stack **stack_a, int print)` function
-    - [ ] Swap first two elements of stack A
-    - [ ] Handle edge cases (NULL, 1 element)
-    - [ ] If print=1, write "sa\n" to stdout
-    - [ ] Implementation:
-      - [ ] Save first node (head)
-      - [ ] Save second node (head->next)
-      - [ ] Set head->next to second->next
-      - [ ] Set second->next to head
-      - [ ] Update stack head to second
+- [x] Create `srcs/operations_swap.c`
+  - [x] Write `sa(t_stack **stack_a, int print)` function
+    - [x] Swap first two elements of stack A
+    - [x] Handle edge cases (NULL, 1 element)
+    - [x] If print=1, write "sa\n" to stdout
+    - [x] Implementation:
+      - [x] Save first node (head)
+      - [x] Save second node (head->next)
+      - [x] Set head->next to second->next
+      - [x] Set second->next to head
+      - [x] Update stack head to second
 
   - [ ] Write `sb(t_stack **stack_b, int print)` function
     - [ ] Same as sa but for stack B
