@@ -90,22 +90,26 @@ stack_a -> [3] -> [5] -> [8] -> [1] -> [2] -> NULL
 **Condition:** Need at least 2 elements to swap.
 
 ```c
-if (!*stack_a || !(*stack_a)->next)
-    return;  // 0 or 1 element, cannot swap
+if (!stack_a || !*stack_a || !(*stack_a)->next)
+    return;  // NULL pointer, 0 or 1 element, cannot swap
 ```
 
 **Cases where swap is impossible:**
 ```
+Case 0: NULL double pointer
+stack_a itself is NULL
+Cannot swap → return
+
 Case 1: Empty stack
-stack_a -> NULL
+*stack_a -> NULL
 Cannot swap → return
 
 Case 2: Single element
-stack_a -> [5] -> NULL
+*stack_a -> [5] -> NULL
 Cannot swap → return
 
 Case 3: Two or more elements
-stack_a -> [5] -> [3] -> ...
+*stack_a -> [5] -> [3] -> ...
 Can swap → continue
 ```
 
@@ -136,8 +140,8 @@ second points to [3]
 **Rewire the pointers:**
 ```c
 first->next = second->next;  // First now points to third
-*stack_a = second;            // Head now points to second
 second->next = first;         // Second now points to first
+*stack_a = second;            // Head now points to second
 ```
 
 **Detailed breakdown:**
@@ -157,27 +161,27 @@ second
 Now first bypasses second and points to third element!
 ```
 
-**Operation 2:** `*stack_a = second`
+**Operation 2:** `second->next = first`
+```
+Before:
+first  -> [5] -> [8] -> NULL
+second -> [3] -> [8] -> NULL (still points to old next)
+
+After:
+second -> [3] -> [5] -> [8] -> NULL
+
+Second now points to first!
+```
+
+**Operation 3:** `*stack_a = second`
 ```
 Before:
 stack_a -> [5] ...
 
 After:
-stack_a -> [3] ...
-
-Head pointer now points to second element!
-```
-
-**Operation 3:** `second->next = first`
-```
-Before:
-stack_a -> [3] -> [8] ...
-           [5] -> [8] ...
-
-After:
 stack_a -> [3] -> [5] -> [8] -> NULL
 
-Complete! Elements are swapped!
+Complete! Head updated, elements are swapped!
 ```
 
 ### Step 4: Print Operation (Optional)
@@ -211,9 +215,10 @@ Call: sa(&stack_a, 1);
 ### Step 1: Validation
 
 ```c
-if (!*stack_a || !(*stack_a)->next)
+if (!stack_a || !*stack_a || !(*stack_a)->next)
     return;
 
+stack_a (not NULL) ✓
 *stack_a = [5] (not NULL) ✓
 (*stack_a)->next = [3] (not NULL) ✓
 
@@ -250,24 +255,24 @@ stack_a -> [5] ----+
 ### Step 4: Rewire - Part 2
 
 ```c
-*stack_a = second;
+second->next = first;
 
-This makes stack_a point to [3] instead of [5]
+This makes [3]->next point to [5]
 
 Memory state:
-stack_a -> [3] -> [8] -> [1] -> NULL
+stack_a -> [5] (still points here)
 
-           [5] -> [8] (also points to [8])
+           [3] -> [5] -> [8] -> [1] -> NULL
            ↑
-         first
+         second
 ```
 
 ### Step 5: Rewire - Part 3
 
 ```c
-second->next = first;
+*stack_a = second;
 
-This makes [3]->next point to [5]
+This makes stack_a point to [3] instead of [5]
 
 Final memory state:
 stack_a -> [3] -> [5] -> [8] -> [1] -> NULL
@@ -511,7 +516,7 @@ No arrays, no additional allocations!
 ```
 FUNCTION sa(stack_a, print):
     // Step 1: Validate
-    IF stack_a is NULL OR stack_a->next is NULL:
+    IF stack_a is NULL OR *stack_a is NULL OR (*stack_a)->next is NULL:
         RETURN  // Cannot swap
 
     // Step 2: Save pointers
@@ -520,8 +525,8 @@ FUNCTION sa(stack_a, print):
 
     // Step 3: Perform swap
     first->next = second->next   // First points to third
-    *stack_a = second             // Head points to second
     second->next = first          // Second points to first
+    *stack_a = second             // Head points to second
 
     // Step 4: Print if requested
     IF print == 1:
@@ -534,7 +539,9 @@ END FUNCTION
 ```
 FUNCTION sa(stack_a, print):
     // Guard clause: need at least 2 elements to swap
-    // Check if stack is empty OR only has one element
+    // Check if pointer is valid, stack is empty, OR only has one element
+    IF stack_a == NULL:
+        RETURN  // Invalid double pointer
     IF *stack_a == NULL:
         RETURN  // Empty stack
     IF (*stack_a)->next == NULL:
@@ -549,13 +556,13 @@ FUNCTION sa(stack_a, print):
     // This disconnects second from the chain temporarily
     first_node->next = second_node->next
 
-    // Rewire step 2: Make head pointer point to second node
+    // Rewire step 2: Make second node point to first node
+    // This completes the node linking
+    second_node->next = first_node
+
+    // Rewire step 3: Make head pointer point to second node
     // Second is now the new first element
     *stack_a = second_node
-
-    // Rewire step 3: Make second node point to first node
-    // This completes the swap - second now points to first
-    second_node->next = first_node
 
     // Optional: Print operation for checker
     IF print is TRUE:
@@ -566,10 +573,10 @@ END FUNCTION
 ### Defensive Implementation
 
 ```
-FUNCTION sa_safe(stack_a, print):
-    // Extra safety checks
+FUNCTION sa(stack_a, print):
+    // Full validation - defensive approach
     IF stack_a is NULL:
-        RETURN  // Invalid pointer
+        RETURN  // Invalid double pointer
 
     IF *stack_a is NULL:
         RETURN  // Empty stack
@@ -581,20 +588,18 @@ FUNCTION sa_safe(stack_a, print):
     first = *stack_a
     second = first->next
 
-    // Validate second is not NULL (redundant but safe)
-    IF second is NULL:
-        RETURN
-
     // Perform swap
     first->next = second->next
-    *stack_a = second
     second->next = first
+    *stack_a = second
 
     // Print
     IF print:
         ft_printf("sa\n")
 END FUNCTION
 ```
+
+**Note:** This is the recommended approach - checking all three conditions ensures robustness.
 
 ---
 
@@ -651,8 +656,8 @@ Result: Creates circular reference [second] -> [first] -> [second] -> ...
 
 **Correct order:**
 1. Fix first->next (make it skip second)
-2. Update head pointer
-3. Fix second->next (make it point to first)
+2. Fix second->next (make it point to first)
+3. Update head pointer
 
 ### Mistake 2: Not Checking for NULL
 
@@ -663,6 +668,14 @@ void sa(t_stack **stack_a, int print)
     t_stack *first = *stack_a;       // Crashes if stack_a is NULL!
     t_stack *second = first->next;   // Crashes if first is NULL!
     // ...
+}
+
+✓ CORRECT:
+void sa(t_stack **stack_a, int print)
+{
+    if (!stack_a || !*stack_a || !(*stack_a)->next)
+        return;
+    // Now safe to dereference
 }
 ```
 
@@ -965,15 +978,15 @@ void sa(t_stack **stack_a, int print)
     t_stack *first;
     t_stack *second;
 
-    if (!*stack_a || !(*stack_a)->next)
+    if (!stack_a || !*stack_a || !(*stack_a)->next)
         return;
 
     first = *stack_a;
     second = (*stack_a)->next;
 
     first->next = second->next;
-    *stack_a = second;
     second->next = first;
+    *stack_a = second;
 
     if (print)
         ft_printf("sa\n");

@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/19 14:01:47 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/19 14:29:49 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,31 @@ void	sa(t_stack **stack_a, int print)
 	t_stack	*first_node;
 	t_stack	*second_node;
 
-	if (!*stack_a || !(*stack_a)->next)
+	if (!stack_a || !*stack_a || !(*stack_a)->next)
 		return ;
 	first_node = *stack_a;
 	second_node = (*stack_a)->next;
 	first_node->next = second_node->next;
-	*stack_a = second_node;
 	second_node->next = first_node;
+	*stack_a = second_node;
 	if (print == 1)
 		ft_printf("sa\n");
+	return ;
+}
+
+void	sb(t_stack **stack_b, int print)
+{
+	t_stack	*first_node;
+	t_stack	*second_node;
+
+	if (!stack_b || !*stack_b || !(*stack_b)->next)
+		return ;
+	first_node = *stack_b;
+	second_node = (*stack_b)->next;
+	first_node->next = second_node->next;
+	second_node->next = first_node;
+	*stack_b = second_node;
+	if (print == 1)
+		ft_printf("sb\n");
 	return ;
 }

@@ -267,17 +267,19 @@
 - [x] Create `srcs/operations_swap.c`
   - [x] Write `sa(t_stack **stack_a, int print)` function
     - [x] Swap first two elements of stack A
-    - [x] Handle edge cases (NULL, 1 element)
+    - [x] Handle edge cases (NULL double pointer, empty stack, 1 element)
     - [x] If print=1, write "sa\n" to stdout
     - [x] Implementation:
+      - [x] Validate: `if (!stack_a || !*stack_a || !(*stack_a)->next) return;`
       - [x] Save first node (head)
       - [x] Save second node (head->next)
-      - [x] Set head->next to second->next
-      - [x] Set second->next to head
-      - [x] Update stack head to second
+      - [x] Set first->next to second->next (skip second)
+      - [x] Set second->next to first (link second to first)
+      - [x] Update stack head to second (complete swap)
 
   - [ ] Write `sb(t_stack **stack_b, int print)` function
     - [ ] Same as sa but for stack B
+    - [ ] Handle edge cases (NULL double pointer, empty stack, 1 element)
     - [ ] If print=1, write "sb\n" to stdout
 
   - [ ] Write `ss(t_stack **stack_a, t_stack **stack_b, int print)` function
