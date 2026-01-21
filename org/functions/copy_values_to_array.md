@@ -168,7 +168,39 @@ Array (filled, contiguous):
 
 ## Step-by-Step Implementation
 
-### Step 1: Initialize Array Index
+### Step 1: Validate Parameters (DEFENSIVE)
+
+**Check for NULL inputs:**
+```c
+if (!arr || !stack)
+    return;
+```
+
+**Optional size validation:**
+```c
+if (size <= 0)
+    return;
+```
+
+**Why these checks are important:**
+```
+!arr check:
+- Prevents writing to NULL pointer
+- If malloc failed in caller, arr is NULL
+- Segfault without this check
+
+!stack check:
+- Prevents dereferencing NULL stack
+- Edge case: empty stack is valid
+- Allows function to handle gracefully
+
+size <= 0 check:
+- Prevents invalid operations
+- Though loop would handle this anyway
+- Makes intent explicit
+```
+
+### Step 2: Initialize Array Index
 
 **Start at beginning:**
 ```c
@@ -182,7 +214,7 @@ First element at arr[0]
 Sequential filling from left to right
 ```
 
-### Step 2: Loop Through Stack and Array
+### Step 3: Loop Through Stack and Array
 
 **Dual condition check:**
 ```c
@@ -192,12 +224,12 @@ while (i < size && stack)
 }
 ```
 
-**Why both conditions:**
+**Why both conditions (DEFENSIVE DESIGN):**
 ```
 i < size:
 - Prevents array overflow
 - Ensures we don't write past allocated memory
-- Critical for safety
+- Critical for safety - buffer overflow prevention
 
 stack:
 - Ensures node exists
@@ -206,11 +238,14 @@ stack:
 
 Both needed for robustness:
 - Normal case: stack reaches NULL when i == size
-- Edge case: stack shorter than size → stop early
-- Edge case: size smaller than stack → copy only size elements
+- Edge case: stack shorter than size → stop early (safe)
+- Edge case: size smaller than stack → copy only size elements (safe)
+- Edge case: Both NULL → loop never executes (safe)
+
+This dual-check pattern is a defensive programming best practice
 ```
 
-### Step 3: Copy Value to Array
+### Step 4: Copy Value to Array
 
 **Transfer data:**
 ```c
@@ -222,9 +257,15 @@ arr[i] = stack->value;
 Copy the integer value (not the node)
 arr[i] gets the value field
 Stack node structure unchanged
+
+Note: At this point, we already checked:
+- arr is not NULL (Step 1)
+- stack is not NULL (loop condition)
+- i < size (loop condition)
+So this assignment is safe
 ```
 
-### Step 4: Advance Both Pointers
+### Step 5: Advance Both Pointers
 
 **Move to next positions:**
 ```c
@@ -237,29 +278,66 @@ i++;
 Stack pointer: Move to next node
 Array index: Move to next position
 Both move in lockstep
+
+Critical: Must advance both!
+- Forgetting stack = stack->next → infinite loop
+- Forgetting i++ → array overflow
 ```
 
 ---
 
 ## Complete Algorithm Pseudocode
 
+### Defensive Implementation
+
 ```
 FUNCTION copy_values_to_array(stack, arr, size):
-    // Step 1: Initialize array index
+    // Step 1: DEFENSIVE - Validate inputs
+    IF arr is NULL OR stack is NULL:
+        RETURN  // Prevent crashes, graceful handling
+
+    // Optional but recommended:
+    IF size <= 0:
+        RETURN  // Invalid size
+
+    // Step 2: Initialize array index
     i = 0
 
-    // Step 2: Loop through stack and array
+    // Step 3: Loop with dual safety checks
     WHILE i < size AND stack is not NULL:
-        // Step 3: Copy current value
+        // Step 4: Copy current value (safe now)
         arr[i] = stack.value
 
-        // Step 4: Advance both pointers
+        // Step 5: Advance both pointers
         stack = stack.next
         i = i + 1
 
     // Done! Values copied to array
+    // Note: May copy fewer than 'size' if stack is shorter
 END FUNCTION
 ```
+
+### Defensive Checklist
+
+**✅ Input validation:**
+- Check arr != NULL (prevent write to NULL)
+- Check stack != NULL (prevent read from NULL)
+- Optional: Check size > 0
+
+**✅ Loop safety:**
+- Dual condition: bounds check AND null check
+- Prevents array overflow (i < size)
+- Prevents NULL dereference (stack check)
+
+**✅ Correct advancement:**
+- Both pointers advance in sync
+- No infinite loops
+- No buffer overflows
+
+**✅ Edge case handling:**
+- Empty stack: loop never runs, safe
+- NULL arr: caught early, safe
+- Size mismatch: handled by dual condition
 
 ---
 
@@ -653,7 +731,7 @@ arr[i] = stack->index;  // Copying index, not value!
 arr[i] = stack->value;  // Copy value field
 ```
 
-### Mistake 5: Not Checking Array for NULL
+### Mistake 5: Not Checking Array for NULL (CRITICAL!)
 
 ```c
 // ❌ WRONG - arr could be NULL if malloc failed
@@ -668,22 +746,49 @@ void copy_values_to_array(t_stack *stack, int *arr, int size)
 }
 ```
 
-**✅ Better:**
+**✅ DEFENSIVE (Recommended):**
 ```c
 void copy_values_to_array(t_stack *stack, int *arr, int size)
 {
     int i;
 
-    if (!arr)  // Check for NULL array
+    // CRITICAL: Validate inputs first
+    if (!arr || !stack)  // ← Check both for NULL
         return;
+
+    // Optional but good practice:
+    if (size <= 0)
+        return;
+
     i = 0;
     while (i < size && stack)
     {
-        arr[i] = stack->value;
+        arr[i] = stack->value;  // Now guaranteed safe
         stack = stack->next;
         i++;
     }
 }
+```
+
+**Why both checks matter:**
+```
+!arr check:
+- Priority: 🔴 HIGHEST
+- If malloc failed in caller, arr is NULL
+- Writing to NULL pointer causes segfault
+- Must check before ANY array access
+
+!stack check:
+- Priority: 🔴 HIGH
+- Prevents dereferencing NULL in loop
+- Though loop would catch it, explicit is better
+- Makes defensive intent clear
+
+size <= 0 check:
+- Priority: 🟡 MEDIUM
+- Prevents wasted work
+- Loop would handle it, but this is clearer
+- Good defensive practice
 ```
 
 ---

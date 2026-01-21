@@ -389,6 +389,70 @@ Ops count: 2
 
 ---
 
+## Defensive Checks
+
+### Input Validation
+| Check | Priority | Failure Mode | Consequence |
+|-------|----------|--------------|-------------|
+| `!stack` | **CRITICAL** | NULL double pointer | SEGFAULT when dereferencing `stack` |
+| `!*stack` | **CRITICAL** | NULL dereferenced pointer | SEGFAULT when accessing `(*stack)->value` |
+| `stack_size(*stack) < 3` | **MEDIUM** | Insufficient elements | Invalid sorting logic, potential SEGFAULT |
+| Depends on `sa`, `ra`, `rra` | **LOW** | Operation failures | Operations have their own defensive checks |
+
+### Why These Checks Matter
+
+1. **NULL stack pointer check (`!stack`) - CRITICAL:**
+   - **Without:** Dereferencing `*stack` will cause immediate SEGFAULT
+   - **With:** Returns safely without attempting to sort
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** Prevents catastrophic crash from NULL double pointer
+   - **Defensive Priority:** Must be first check before any dereference
+
+2. **NULL dereferenced stack check (`!*stack`) - CRITICAL:**
+   - **Without:** Accessing `(*stack)->value` will crash on empty stack
+   - **With:** Returns safely, treating empty stack as already sorted
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** Prevents crash when stack contains no nodes
+   - **Defensive Priority:** Must be second check, after stack pointer validation
+
+3. **Size validation check (should have exactly 3 elements) - MEDIUM:**
+   - **Without:** Logic assumes 3 elements, may access NULL nodes if fewer
+   - **With:** Returns early for stacks with < 3 elements
+   - **Cost:** O(n) where n ≤ 3, so effectively O(1)
+   - **Benefit:** Prevents invalid comparisons and potential SEGFAULT
+   - **Defensive Priority:** Validates precondition before sorting logic
+   - **Note:** Stacks with > 3 elements may also be invalid, but algorithm will only sort top 3
+
+4. **Operation dependencies (`sa`, `ra`, `rra`) - LOW:**
+   - **Strategy:** sort_three relies on these operations being defensive
+   - **Each operation validates:**
+     - NULL pointer checks
+     - Minimum element requirements
+   - **Layered defense:** sort_three's checks prevent invalid calls
+   - **Trust but verify:** Operations perform their own validation
+
+### Defensive Implementation Strategy
+
+**Guard Order:**
+```
+1. CRITICAL: Check if stack pointer is NULL
+2. CRITICAL: Check if dereferenced stack is NULL
+3. MEDIUM: Validate stack has at least 3 elements
+4. PROCEED: Execute sorting logic
+```
+
+**Return Behavior:**
+- Returns `void` - no error codes
+- Silent failure on invalid input (no sorting performed)
+- Relies on defensive operations for additional safety
+
+**Validation Cost:**
+- NULL checks: O(1) - two comparisons
+- Size check: O(3) = O(1) - constant for 3-element validation
+- Total overhead: O(1) - negligible
+
+---
+
 ## Edge Cases
 
 ### Case 1: Less Than 3 Elements
@@ -397,19 +461,33 @@ Ops count: 2
 // Stack: [1, 2]
 sort_three(&stack_a);
 
-// Should handle gracefully (return early or sort as sort_two)
+// DEFENSIVE: Returns early via size check
+// No sorting performed (not enough elements)
+// STATUS: ✅ Safe - size validation catches this
 ```
 
-### Case 2: Empty Stack
+### Case 2: Empty Stack (NULL Dereferenced)
 
 ```c
 t_stack *stack_a = NULL;
 sort_three(&stack_a);
 
-// Should return immediately, no crash
+// DEFENSIVE: Returns immediately via !*stack check
+// No crash, silent no-op
+// STATUS: ✅ Safe - CRITICAL check prevents SEGFAULT
 ```
 
-### Case 3: Negative Numbers
+### Case 3: NULL Stack Pointer
+
+```c
+sort_three(NULL);
+
+// DEFENSIVE: Returns immediately via !stack check
+// No crash, cannot dereference NULL pointer
+// STATUS: ✅ Safe - CRITICAL check prevents SEGFAULT
+```
+
+### Case 4: Negative Numbers
 
 ```c
 // Stack: [-1, -5, -3]
@@ -417,9 +495,10 @@ sort_three(&stack_a);
 
 // Should sort to: [-5, -3, -1]
 // Works the same as positive numbers
+// STATUS: ✅ Works - comparisons work with negative values
 ```
 
-### Case 4: Duplicates
+### Case 5: Duplicates
 
 ```c
 // Stack: [2, 2, 1]
@@ -427,6 +506,19 @@ sort_three(&stack_a);
 
 // Should sort to: [1, 2, 2]
 // Duplicates treated normally
+// STATUS: ✅ Works - algorithm handles equal values correctly
+```
+
+### Case 6: More Than 3 Elements
+
+```c
+// Stack: [4, 3, 2, 1]
+sort_three(&stack_a);
+
+// BEHAVIOR: Sorts only top 3 elements
+// Result: [2, 3, 4, 1] (first 3 sorted, last unchanged)
+// STATUS: ⚠️ Potentially unexpected - caller should validate size
+// NOTE: This is typically not called with > 3 elements
 ```
 
 ---
@@ -622,7 +714,31 @@ void	sort_three(t_stack **stack_a)
 
 ## Common Mistakes
 
-### Mistake 1: Not Using Optimal Solutions
+### Mistake 1: Not Validating Input (CRITICAL)
+
+```c
+// ❌ WRONG - No defensive checks
+void sort_three(t_stack **stack_a)
+{
+    int max = find_max(*stack_a);  // CRASH if stack_a is NULL!
+    // ...
+}
+```
+
+**✅ Correct:**
+```c
+if (!stack_a || !*stack_a)
+    return;
+if (stack_size(*stack_a) < 3)
+    return;
+// Now safe to proceed
+```
+
+**Severity:** CRITICAL - causes SEGFAULT on NULL input
+**Defensive Priority:** Must be first checks before any dereference
+**Impact:** Without validation, NULL or insufficient elements crash the program
+
+### Mistake 2: Not Using Optimal Solutions (MEDIUM)
 
 ```c
 // ❌ WRONG - Using bubble sort approach
@@ -645,7 +761,10 @@ void sort_three(t_stack **a)
 // Maximum 2 operations
 ```
 
-### Mistake 2: Wrong Rotation Direction
+**Severity:** MEDIUM - works but inefficient
+**Impact:** Uses more operations than necessary, worse performance
+
+### Mistake 3: Wrong Rotation Direction (HIGH)
 
 ```c
 // ❌ WRONG
@@ -659,7 +778,10 @@ if ((*stack_a)->value == max)
     ra(stack_a, 1);  // Rotate forward to move max down
 ```
 
-### Mistake 3: Forgetting to Check After Rotation
+**Severity:** HIGH - produces incorrect sorting
+**Impact:** Stack ends up in wrong order, sorting fails
+
+### Mistake 4: Forgetting to Check After Rotation (HIGH)
 
 ```c
 // ❌ WRONG
@@ -678,7 +800,10 @@ if ((*stack_a)->value == max)
 }
 ```
 
-### Mistake 4: Using find_min Instead of find_max
+**Severity:** HIGH - incomplete sorting
+**Impact:** Some permutations remain unsorted after rotation
+
+### Mistake 5: Using find_min Instead of find_max (LOW)
 
 ```c
 // ❌ NOT WRONG but different logic
@@ -691,6 +816,9 @@ int min = find_min(*stack_a);
 int max = find_max(*stack_a);
 // Standard approach, easier to reason about
 ```
+
+**Severity:** LOW - works but requires different decision tree
+**Impact:** More complex logic, harder to maintain
 
 ---
 
@@ -754,13 +882,52 @@ sort_three([-1,-5,-3]);  // Should sort to [-5,-3,-1]
 
 ---
 
+## Defensive Programming Checklist
+
+### Implementation Verification
+- [ ] **NULL double pointer check** - `if (!stack_a) return;` is first line
+- [ ] **NULL stack check** - `if (!*stack_a) return;` is second check
+- [ ] **Size validation** - Verify stack has at least 3 elements before sorting
+- [ ] **find_max() call** - Properly calls find_max to determine permutation
+- [ ] **Max position check** - Correctly identifies if max is top/middle/bottom
+- [ ] **Rotation direction** - Uses `ra` (not `rra`) when max on top
+- [ ] **Post-rotation check** - Checks if swap needed after rotation
+- [ ] **All 6 cases handled** - Logic covers all possible permutations
+
+### Testing Checklist
+- [ ] **NULL double pointer** - `sort_three(NULL)` doesn't crash
+- [ ] **Empty stack** - `sort_three(&empty_stack)` doesn't crash
+- [ ] **Single element** - `sort_three(&stack_with_one)` doesn't crash
+- [ ] **Two elements** - `sort_three(&stack_with_two)` doesn't crash or sort incorrectly
+- [ ] **All 6 permutations** - Each of [1,2,3], [1,3,2], [2,1,3], [2,3,1], [3,1,2], [3,2,1] sorts correctly
+- [ ] **Operation count** - No permutation uses more than 2 operations
+- [ ] **Negative numbers** - Correctly sorts negative values
+- [ ] **Duplicates** - Handles equal values without crashing
+
+### Correctness Verification
+- [ ] **Already sorted [1,2,3]** - 0 operations
+- [ ] **Case 2 [1,3,2]** - Exactly 2 operations (rra, sa)
+- [ ] **Case 3 [2,1,3]** - Exactly 1 operation (sa)
+- [ ] **Case 4 [2,3,1]** - Exactly 1 operation (rra)
+- [ ] **Case 5 [3,1,2]** - Exactly 1 operation (ra)
+- [ ] **Case 6 [3,2,1]** - Exactly 2 operations (ra, sa)
+
+### Defensive Dependencies
+- [ ] **find_max has defensive checks** - Verify find_max handles NULL
+- [ ] **Operations have defensive checks** - Verify sa, ra, rra handle NULL
+- [ ] **stack_size defensive** - If using size check, verify stack_size handles NULL
+- [ ] **Layered defense** - sort_three's checks prevent invalid calls to dependencies
+
+---
+
 ## Summary
 
 **What sort_three Does:**
-1. Identifies which of 6 permutations is present
-2. Executes optimal hardcoded solution for that case
-3. Uses maximum 2 operations
-4. Employs sa, ra, and rra operations
+1. Validates input (double pointer, dereferenced stack, size)
+2. Identifies which of 6 permutations is present
+3. Executes optimal hardcoded solution for that case
+4. Uses maximum 2 operations
+5. Employs sa, ra, and rra operations
 
 **Key Characteristics:**
 - ✅ Handles all 6 permutations optimally
@@ -769,6 +936,14 @@ sort_three([-1,-5,-3]);  // Should sort to [-5,-3,-1]
 - ✅ Provably optimal algorithm
 - ✅ Building block for larger sorts
 
+**Defensive features:**
+- ✅ NULL double pointer validation (CRITICAL)
+- ✅ Empty stack validation (CRITICAL)
+- ✅ Size validation (MEDIUM)
+- ✅ Defensive dependencies (LOW - trusts operations' own checks)
+- ✅ Silent failure on invalid input
+- ✅ No memory allocation (no malloc failure modes)
+
 **Critical Uses:**
 - Direct sorting of 3-element stacks
 - Called by sort_four and sort_five
@@ -776,6 +951,7 @@ sort_three([-1,-5,-3]);  // Should sort to [-5,-3,-1]
 - Foundation of small sorting strategy
 
 **Remember:**
+- Always validate input first (NULL checks, size check)
 - Use find_max to identify case
 - Maximum is on top, middle, or bottom
 - Each position has specific solution

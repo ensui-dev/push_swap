@@ -92,18 +92,20 @@ stack_b -> [3] -> [7] -> [1] -> [9] -> NULL
 
 ## Step-by-Step Implementation
 
-### Step 1: Validate Source Stack
+### Step 1: Validate Stacks
 
-**Check if stack A has elements to push:**
+**Check if operation is possible:**
 ```c
-if (!*stack_a)
-    return;  // Empty stack A, nothing to push
+if (!stack_a || !stack_b || !*stack_a)
+    return;
 ```
 
-**Why this check?**
-- Can't push from empty stack
-- Attempting to access NULL->next would crash
-- Graceful handling of edge case
+**Why these checks?**
+- `!stack_a` - Validates source double pointer (defensive)
+- `!stack_b` - Validates destination double pointer (defensive)
+- `!*stack_a` - Source must have at least 1 element to push
+
+**Note:** Unlike swap/rotate operations, push only needs **1 element** in the source stack (not 2), so we don't check `!(*stack_a)->next`.
 
 ### Step 2: Save Pointer to Element Being Moved
 
@@ -142,16 +144,35 @@ temp    -> [3] -> [5] -> [8] -> NULL
                   ^ temp still points to old second element!
 ```
 
-**Important:** temp is now "disconnected" from stack A, but still points to the old second element. We need to fix this!
+### Step 4: **CRITICAL** - Disconnect Moved Node
 
-### Step 4: Disconnect Temporary Node
-
-**Make temp a standalone node:**
+**Clear temp's next pointer to prevent shared memory:**
 ```c
-temp->next = NULL;  // Will be overwritten in next step
+temp->next = NULL;
 ```
 
-**Actually, this step is often unnecessary because we're about to call `stack_add_front`, which will overwrite `temp->next`. But it's conceptually clearer.**
+**Why this is CRITICAL:**
+```
+Before:
+temp    -> [3] -> [5] -> [8] -> NULL
+                  ^ Still connected to stack A!
+
+After:
+temp    -> [3] -> NULL
+           ^ Now isolated, safe to add to B
+
+Without this step:
+- temp shares nodes with stack A
+- Both stacks point to same nodes
+- Freeing causes DOUBLE FREE
+- Memory corruption!
+```
+
+**This is a common source of bugs:**
+- If you forget this line, both stacks will share nodes
+- When you free one stack, the other has dangling pointers
+- Results in double free errors or segfaults
+- Always disconnect before adding to destination!
 
 ### Step 5: Add Element to Stack B
 
@@ -170,12 +191,13 @@ temp->next = *stack_b;  // temp points to old top of B
 ```
 Before:
 stack_b -> [7] -> [1] -> NULL
-temp    -> [3] -> ???
+temp    -> [3] -> NULL  (disconnected from A!)
 
 After:
 stack_b -> [3] -> [7] -> [1] -> NULL
            ↑
          temp (same node, now in B!)
+stack_a -> [5] -> [8] -> NULL (completely separate)
 ```
 
 ### Step 6: Print Operation
@@ -237,7 +259,24 @@ temp still points to [3] node:
 temp -> [3] -> [5] (still has old next pointer)
 ```
 
-### Step 4: Add to B
+### Step 4: Disconnect Node (CRITICAL!)
+
+```c
+temp->next = NULL;
+
+Before:
+temp -> [3] -> [5] (shares nodes with A!)
+
+After:
+temp -> [3] -> NULL (isolated)
+
+Why critical:
+- Prevents both stacks from sharing nodes
+- Avoids double free when freeing stacks
+- Essential for memory safety
+```
+
+### Step 5: Add to B
 
 ```c
 stack_add_front(&stack_b, temp);
@@ -250,9 +289,10 @@ Result:
 stack_b -> [3] -> [7] -> [1] -> NULL
            ↑
          temp
+stack_a -> [5] -> [8] -> NULL (completely separate!)
 ```
 
-### Step 5: Print
+### Step 6: Print
 
 ```c
 if (print)
@@ -494,9 +534,9 @@ No new allocations, just pointer shuffling!
 
 ```
 FUNCTION pb(stack_a, stack_b, print):
-    // Step 1: Check if source stack is empty
-    IF *stack_a is NULL:
-        RETURN  // Nothing to push
+    // Step 1: Validate stacks (consistent with other operations)
+    IF stack_a is NULL OR stack_b is NULL OR *stack_a is NULL:
+        RETURN  // Invalid pointers or nothing to push
 
     // Step 2: Save reference to element being moved
     temp = *stack_a
@@ -504,10 +544,13 @@ FUNCTION pb(stack_a, stack_b, print):
     // Step 3: Remove element from stack A
     *stack_a = (*stack_a)->next
 
-    // Step 4: Add element to stack B
+    // Step 4: CRITICAL - Disconnect node from old stack
+    temp->next = NULL  // Prevents shared memory between stacks!
+
+    // Step 5: Add element to stack B
     stack_add_front(stack_b, temp)
 
-    // Step 5: Print if requested
+    // Step 6: Print if requested
     IF print == 1:
         PRINT "pb\n"
 END FUNCTION
@@ -517,12 +560,14 @@ END FUNCTION
 
 ```
 FUNCTION pb(stack_a, stack_b, print):
-    // Validate source stack
+    // Validate both stacks (consistent with sa, ra, etc.)
     // We need at least one element in A to push
     IF stack_a is NULL:
-        RETURN  // Invalid pointer
+        RETURN  // Invalid source pointer
+    IF stack_b is NULL:
+        RETURN  // Invalid destination pointer
     IF *stack_a is NULL:
-        RETURN  // Empty stack
+        RETURN  // Empty source stack
 
     // Save pointer to node being moved
     // This node will be removed from A and added to B
@@ -549,13 +594,14 @@ END FUNCTION
 
 ```
 FUNCTION pb_inline(stack_a, stack_b, print):
-    // Validate
-    IF *stack_a is NULL:
+    // Validate (consistent with sa, ra, etc.)
+    IF stack_a is NULL OR stack_b is NULL OR *stack_a is NULL:
         RETURN
 
     // Save and remove from A
     temp = *stack_a
     *stack_a = (*stack_a)->next
+    temp->next = NULL  // CRITICAL: disconnect!
 
     // Add to B (inline)
     temp->next = *stack_b
@@ -565,6 +611,11 @@ FUNCTION pb_inline(stack_a, stack_b, print):
     IF print:
         PRINT "pb\n"
 END FUNCTION
+
+Note: Even though we set temp->next twice, the first assignment
+to NULL is conceptually important for clarity. In practice, the
+second assignment overwrites it, but showing both makes the
+logic explicit: disconnect from old stack, then connect to new.
 ```
 
 ---
@@ -650,6 +701,27 @@ void pb(t_stack **stack_a, t_stack **stack_b, int print)
 }
 
 Must remove from A: *stack_a = (*stack_a)->next;
+```
+
+### Mistake 3b: Not Disconnecting Node (THIS BUG!)
+
+```c
+❌ WRONG:
+void pb(t_stack **stack_a, t_stack **stack_b, int print)
+{
+    if (!*stack_a)
+        return;
+    temp = *stack_a;
+    *stack_a = (*stack_a)->next;
+    // FORGOT: temp->next = NULL;
+    stack_add_front(stack_b, temp);
+}
+
+Result: temp->next still points to old stack A nodes!
+Both stacks share memory → Double free when freeing!
+This is THE MOST COMMON BUG in push operations!
+
+Correct: Always add temp->next = NULL; before stack_add_front!
 ```
 
 ### Mistake 4: Memory Leak (Freeing Instead of Moving)
@@ -999,11 +1071,12 @@ void pb(t_stack **stack_a, t_stack **stack_b, int print)
 {
     t_stack *temp;
 
-    if (!*stack_a)
+    if (!stack_a || !stack_b || !*stack_a)
         return;
 
     temp = *stack_a;
     *stack_a = (*stack_a)->next;
+    temp->next = NULL;  // CRITICAL: disconnect from A!
     stack_add_front(stack_b, temp);
 
     if (print)
@@ -1015,12 +1088,15 @@ void pb(t_stack **stack_a, t_stack **stack_b, int print)
 
 ## Summary: What pb Does
 
-1. **Validates** stack A has elements to push
+1. **Validates** both stack pointers and that A has elements to push
 2. **Saves** pointer to top element of A
 3. **Removes** element from A (updates head)
-4. **Adds** element to front of B
-5. **Prints** "pb\n" if requested
-6. **Time:** O(1) - constant time operation!
+4. **CRITICAL: Disconnects** temp node (sets next to NULL)
+5. **Adds** element to front of B
+6. **Prints** "pb\n" if requested
+7. **Time:** O(1) - constant time operation!
+
+**CRITICAL NOTE:** Step 4 (setting temp->next = NULL) is essential to prevent both stacks from sharing nodes, which would cause double free errors!
 
 **Key insight:** pb is how you move data between stacks. Master this operation, and you understand the core mechanism that enables all push_swap algorithms. Combined with pa, these operations let you arbitrarily rearrange elements between stacks!
 

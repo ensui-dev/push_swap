@@ -158,33 +158,38 @@ if (!stack_b || !*stack_b || !(*stack_b)->next)
 - 1 element: rotating doesn't change anything
 - 2+ elements: rotation has meaningful effect
 
-### Step 2: Store References to Key Nodes
+### Step 2: Traverse to Find Last and Second-to-Last
 
-**Save pointers to nodes we'll manipulate:**
+**Use single traversal with prev/current pointers:**
 ```c
-first = *stack_b;               // Current top
-last = stack_last(*stack_b);    // Current last (will become first)
-second_to_last = stack_second_to_last(*stack_b);  // Will become new last
+t_stack *prev;
+t_stack *last;
+
+prev = *stack_b;
+while (prev->next->next)
+    prev = prev->next;
+last = prev->next;
 ```
 
-**Memory state:**
-```
-first -> [7] -> [3] -> [9] -> [1] -> NULL
-                       ^      ^
-              second_to_last  last
+**Why this approach?**
+- Single traversal: O(n) - visits each node once
+- No need for separate `stack_second_to_last()` helper function
+- `prev` stops at second-to-last, `last` is `prev->next`
 
-*stack_b = first
+**Memory state after traversal:**
+```
+*stack_b -> [7] -> [3] -> [9] -> [1] -> NULL
+                          ^      ^
+                        prev    last
 ```
 
-**Note:** We need TWO helper functions:
-- `stack_last()` to find last node
-- `stack_second_to_last()` to find second-to-last node
+**Note:** We only need `stack_last()` conceptually - but we find both `prev` (second-to-last) and `last` in the same loop!
 
 ### Step 3: Detach Last Node
 
-**Set second-to-last's next to NULL:**
+**Set prev's next to NULL (detaches last):**
 ```c
-second_to_last->next = NULL;
+prev->next = NULL;
 ```
 
 **After this:**
@@ -197,7 +202,7 @@ last -> [1] -> NULL  (isolated)
 
 **Make last point to current first:**
 ```c
-last->next = first;
+last->next = *stack_b;
 ```
 
 **After this:**
@@ -239,16 +244,18 @@ FUNCTION rrb(stack_b, print):
     IF (*stack_b)->next is NULL:
         RETURN  // Only 1 element, nothing to rotate
 
-    // Step 2: Store references
-    first = *stack_b
-    last = stack_last(*stack_b)
-    second_to_last = stack_second_to_last(*stack_b)
+    // Step 2: Single traversal to find prev (second-to-last) and last
+    prev = *stack_b
+    WHILE prev->next->next != NULL:
+        prev = prev->next
+    // Now prev is second-to-last
+    last = prev->next
 
     // Step 3: Detach last node
-    second_to_last->next = NULL
+    prev->next = NULL
 
     // Step 4: Attach last to front
-    last->next = first
+    last->next = *stack_b
 
     // Step 5: Update head to last
     *stack_b = last
@@ -261,29 +268,7 @@ FUNCTION rrb(stack_b, print):
 END FUNCTION
 ```
 
-### Alternative Implementation (Single Traversal)
-
-```
-FUNCTION rrb_optimized(stack_b, print):
-    // Validate
-    IF !stack_b OR !*stack_b OR !(*stack_b)->next:
-        RETURN
-
-    // Traverse to find last and second-to-last in one pass
-    current = *stack_b
-    WHILE current->next->next != NULL:
-        current = current->next
-    // Now current is second-to-last
-
-    last = current->next
-    current->next = NULL        // Detach
-    last->next = *stack_b       // Attach to front
-    *stack_b = last             // Update head
-
-    IF print:
-        PRINT "rrb\n"
-END FUNCTION
-```
+**Key insight:** We find both `prev` (second-to-last) and `last` in a single O(n) traversal - no need for separate helper functions!
 
 ---
 
@@ -303,15 +288,14 @@ END FUNCTION
 Continue to reverse rotate
 ```
 
-**After Step 2 (Store References):**
+**After Step 2 (Single Traversal):**
 ```
-first = pointer to [7]
-last  = pointer to [1]
-second_to_last = pointer to [9]
+prev = pointer to [9]  (second-to-last)
+last = pointer to [1]
 
-first -> [7] -> [3] -> [9] -> [1] -> NULL
-                       ^      ^
-              second_to_last  last
+*stack_b -> [7] -> [3] -> [9] -> [1] -> NULL
+                          ^      ^
+                        prev    last
 ```
 
 **After Step 3 (Detach last):**
@@ -432,35 +416,35 @@ rrb(&stack, 1);  // [7, 3, 9, 1]  ← Back to original!
 
 **Operations performed:**
 1. Validation - O(1)
-2. Store first - O(1)
-3. **Find last - O(n)** ← Bottleneck 1
-4. **Find second-to-last - O(n)** ← Bottleneck 2
-5. Detach last - O(1)
-6. Attach to front - O(1)
-7. Update head - O(1)
-8. Print - O(1)
+2. **Single traversal to find prev and last - O(n)** ← Only bottleneck
+3. Detach last - O(1)
+4. Attach to front - O(1)
+5. Update head - O(1)
+6. Print - O(1)
 
 **Total: O(n)** where n = number of elements in stack B
 
 **Why O(n)?**
 ```
-Must traverse to find last node:
-[first] -> [?] -> [?] -> ... -> [second-to-last] -> [last] -> NULL
-    1       2      3             n-1                  n
+Single traversal to find both prev (second-to-last) and last:
+[first] -> [?] -> [?] -> ... -> [prev] -> [last] -> NULL
+    1       2      3             n-1        n
 
-Need to visit up to n nodes!
+Need to visit up to n-1 nodes to reach prev!
 ```
 
-**Optimization note:**
+**Implementation efficiency:**
 ```
-Can find both last and second-to-last in one pass!
-Still O(n), but only one traversal instead of two.
+We find both prev and last in ONE traversal!
+- prev stops at second-to-last node
+- last = prev->next (immediate access)
+- No need for separate helper functions
 ```
 
 ### Space Complexity: **O(1)** - Constant Space
 
 **Memory used:**
-- 3 pointers (first, last, second_to_last)
+- 2 pointers (prev, last)
 - No allocations
 - No recursion
 - No arrays
@@ -543,9 +527,8 @@ rrb(&b, 1);  // Move 2
 ```c
 void	rrb(t_stack **stack_b, int print)
 {
-    t_stack	*first;
+    t_stack	*prev;
     t_stack	*last;
-    t_stack	*second_to_last;
 
     // ... implementation ...
 }
@@ -555,43 +538,28 @@ void	rrb(t_stack **stack_b, int print)
 - ✅ Return type void
 - ✅ Double pointer for head modification
 - ✅ Tab between type and name
-- ✅ Only 3 variables (under 5 limit)
-- ✅ Should fit in ~20 lines (under 25 limit)
+- ✅ Only 2 variables (under 5 limit)
+- ✅ Should fit in ~15 lines (under 25 limit)
 
-### Helper Function Dependencies
+### Implementation Pattern
 
 ```c
-// Must use helper functions
-last = stack_last(*stack_b);
-second_to_last = stack_second_to_last(*stack_b);
+// Single traversal - no helper functions needed!
+prev = *stack_b;
+while (prev->next->next)
+    prev = prev->next;
+last = prev->next;
 
-// Can't inline - would violate norms
+// This is clean, efficient, and norm-compliant
 ```
 
-**Required helpers:**
-```c
-t_stack *stack_last(t_stack *stack)
-{
-    while (stack && stack->next)
-        stack = stack->next;
-    return (stack);
-}
-
-t_stack *stack_second_to_last(t_stack *stack)
-{
-    if (!stack || !stack->next)
-        return (NULL);
-    while (stack->next->next)
-        stack = stack->next;
-    return (stack);
-}
-```
+**No additional helpers required** - the single traversal approach keeps everything self-contained while staying within norm limits.
 
 ---
 
 ## Common Mistakes
 
-### ❌ Mistake 1: Not Detaching Second-to-Last
+### ❌ Mistake 1: Not Detaching Last from Chain
 
 ```c
 // WRONG
@@ -605,7 +573,7 @@ last->next = *stack_b;  // Attach to front first
 
 **✅ Correct:**
 ```c
-second_to_last->next = NULL;  // CRITICAL: break the link first!
+prev->next = NULL;        // CRITICAL: break the link first!
 last->next = *stack_b;
 *stack_b = last;
 ```
@@ -640,25 +608,28 @@ last->next = *stack_b;        // Now points to itself!
 
 **✅ Correct order:**
 ```c
-second_to_last->next = NULL;  // 1. Detach
+prev->next = NULL;            // 1. Detach
 last->next = *stack_b;        // 2. Attach to front
 *stack_b = last;              // 3. Update head
 ```
 
-### ❌ Mistake 4: Not Finding Second-to-Last
+### ❌ Mistake 4: Not Finding Second-to-Last (prev)
 
 ```c
-// WRONG - Just finding last
+// WRONG - Just finding last without tracking prev
 last = stack_last(*stack_b);
 last->next = *stack_b;   // Who detaches last from chain?
 
 // Result: Chain still connected, creating cycle
 ```
 
-**✅ Must find second-to-last:**
+**✅ Must find prev (second-to-last) to detach:**
 ```c
-second_to_last = stack_second_to_last(*stack_b);
-second_to_last->next = NULL;  // This detaches last!
+prev = *stack_b;
+while (prev->next->next)
+    prev = prev->next;
+last = prev->next;
+prev->next = NULL;  // This detaches last!
 ```
 
 ### ❌ Mistake 5: Confusing rb and rrb Logic
@@ -673,9 +644,9 @@ last->next = first;
 
 **✅ rrb moves last to first:**
 ```c
-second_to_last->next = NULL;  // Detach last
-last->next = first;            // Last points to first
-*stack_b = last;               // Last becomes new head
+prev->next = NULL;            // Detach last
+last->next = *stack_b;        // Last points to old first
+*stack_b = last;              // Last becomes new head
 ```
 
 ### ❌ Mistake 6: Single Pointer Parameter
@@ -965,14 +936,14 @@ Target at position 5:
 - ✅ Critical for efficient B-stack navigation
 - ✅ Better than rb for lower half elements
 - ✅ Inverse of rb (they cancel each other)
-- ✅ Must detach second-to-last's next to NULL
+- ✅ Must detach prev->next to NULL before attaching last to front
 - ✅ Order of operations is crucial
 
 **Remember:**
 1. Always validate stack has 2+ elements
-2. Find both last and second-to-last nodes
-3. Detach last by setting second-to-last->next = NULL
-4. Attach last to front: last->next = first
+2. Single traversal finds both prev (second-to-last) and last
+3. Detach last by setting prev->next = NULL
+4. Attach last to front: last->next = *stack_b
 5. Update head: *stack_b = last
 6. Use rrb when element is in lower half of B
 7. Combine with rrr when both stacks need reverse rotation
@@ -993,8 +964,6 @@ Target at position 5:
 - [rb](rb.md) - Rotate stack B (inverse operation)
 - [rra](rra.md) - Reverse rotate stack A (mirror function)
 - [rrr](rrr.md) - Reverse rotate both A and B simultaneously
-- [stack_last](stack_last.md) - Find last node (required helper)
-- [stack_second_to_last](stack_utils.md) - Find second-to-last (required helper)
 - [stack_size](stack_size.md) - Count elements (for cost calculation)
 
 ---

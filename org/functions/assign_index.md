@@ -172,11 +172,36 @@ After assign_index:
 
 ## Step-by-Step Implementation
 
-### Step 1: Get Stack Size
+### Step 1: Validate Stack Parameter (DEFENSIVE)
+
+**Check for NULL stack:**
+```c
+if (!stack)
+    return;
+```
+
+**Why this check is critical:**
+```
+Prevents:
+- Segmentation fault on stack_size(NULL)
+- Undefined behavior
+- Crash before any work begins
+
+Edge case: Empty stack (NULL) is valid input
+Result: Function returns immediately, no crash
+```
+
+### Step 2: Get Stack Size
 
 **Count elements:**
 ```c
 int size = stack_size(stack);
+```
+
+**Additional validation:**
+```c
+if (size == 0)
+    return;  // Nothing to normalize
 ```
 
 **Why we need size:**
@@ -190,15 +215,17 @@ Example:
 Stack: [42, -5, 1000, 3]
 size = 4
 Indices will be: 0, 1, 2, 3
+
+Size of 0 or 1 needs no normalization
 ```
 
-### Step 2: Allocate Array for Values
+### Step 3: Allocate Array for Values
 
 **Create temporary storage:**
 ```c
 int *values = malloc(sizeof(int) * size);
 if (!values)
-    return;  // Allocation failed
+    return;  // Allocation failed - CRITICAL check
 ```
 
 **Why use an array:**
@@ -215,12 +242,14 @@ Stack (linked list):
 ✅ But we keep original structure intact
 ```
 
-### Step 3: Copy Stack Values to Array
+### Step 4: Copy Stack Values to Array
 
 **Transfer data:**
 ```c
 copy_values_to_array(stack, values, size);
 ```
+
+**Note:** copy_values_to_array should have its own defensive checks (see copy_values_to_array.md)
 
 **Implementation:**
 ```c
@@ -245,12 +274,14 @@ Array:  [42, -5, 1000, 3]
         0    1    2      3  ← Array indices
 ```
 
-### Step 4: Sort the Array
+### Step 5: Sort the Array
 
 **Order values smallest to largest:**
 ```c
 sort_int_array(values, size);
 ```
+
+**Note:** sort_int_array should have defensive checks (see sort_int_array.md)
 
 **Before and after:**
 ```
@@ -264,7 +295,7 @@ Position 2: 42    ← 3rd smallest
 Position 3: 1000  ← Largest
 ```
 
-### Step 5: Find Index for Each Node
+### Step 6: Find Index for Each Node
 
 **Assign ranks:**
 ```c
@@ -275,6 +306,8 @@ while (current)
     current = current->next;
 }
 ```
+
+**Note:** get_index_position should have defensive checks (see get_index_position.md)
 
 **Process for each node:**
 ```
@@ -299,59 +332,93 @@ For node with value 3:
   Assign: node->index = 1
 ```
 
-### Step 6: Free Temporary Array
+### Step 7: Free Temporary Array
 
 **Clean up:**
 ```c
 free(values);
 ```
 
-**Why free:**
+**Why free is CRITICAL:**
 ```
 Array was only needed temporarily
 No longer needed after indices assigned
 Prevent memory leak
+MUST ALWAYS FREE - even if errors occur earlier
+
+Important: This is why we don't return early after malloc
+without freeing if subsequent operations fail
 ```
 
 ---
 
 ## Complete Algorithm Pseudocode
 
+### Basic Implementation (Defensive)
+
 ```
 FUNCTION assign_index(stack):
-    // Step 1: Get size
+    // Step 1: Defensive - Validate input
+    IF stack is NULL:
+        RETURN  // Invalid input, prevent crash
+
+    // Step 2: Get size
     size = stack_size(stack)
 
-    IF size == 0:
-        RETURN  // Empty stack
+    // Optimization: Nothing to normalize
+    IF size == 0 OR size == 1:
+        RETURN  // Empty or single element needs no indexing
 
-    // Step 2: Allocate temporary array
+    // Step 3: Allocate temporary array
     values = allocate_array(size)
     IF values is NULL:
-        RETURN  // Allocation failed
+        RETURN  // Allocation failed - no memory leak yet
 
-    // Step 3: Copy stack values to array
+    // Step 4: Copy stack values to array
     copy_values_to_array(stack, values, size)
     // Result: values = [42, -5, 1000, 3]
+    // Note: copy_values_to_array has its own defensive checks
 
-    // Step 4: Sort array
+    // Step 5: Sort array
     sort_int_array(values, size)
     // Result: values = [-5, 3, 42, 1000]
+    // Note: sort_int_array has its own defensive checks
 
-    // Step 5: Assign indices based on sorted position
+    // Step 6: Assign indices based on sorted position
     current = stack
     WHILE current is not NULL:
         // Find where current->value appears in sorted array
         index = get_index_position(values, size, current.value)
+        // Note: get_index_position has its own defensive checks
         current.index = index
         current = current.next
 
-    // Step 6: Free temporary array
+    // Step 7: CRITICAL - Free temporary array
     free(values)
 
     // Done! All indices assigned
 END FUNCTION
 ```
+
+### Defensive Checklist
+
+**✅ Input validation:**
+- Check stack != NULL before use
+- Check size > 1 (optimization)
+
+**✅ Resource management:**
+- Check malloc return value
+- Always free allocated memory
+- No memory leaks on early returns
+
+**✅ Delegation to helpers:**
+- copy_values_to_array validates its inputs
+- sort_int_array validates its inputs
+- get_index_position validates its inputs
+
+**✅ Safe iteration:**
+- Check current != NULL in loop
+- No infinite loops (current = current->next)
 
 ---
 
@@ -427,34 +494,47 @@ Index 3: 1000  (largest value)
 
 ## Edge Cases
 
-### Case 1: Empty Stack
+### Case 1: NULL Stack (Defensive)
 
 ```c
 t_stack *stack = NULL;
 
 assign_index(stack);
 
+// With defensive check:
+// if (!stack) return;
 // Result: Function returns immediately
 // No crash ✅
+//
+// Without defensive check:
+// stack_size(NULL) → CRASH ❌
 ```
 
-### Case 2: Single Element
+### Case 2: Single Element (Optimization)
 
 ```c
 // Stack: [42] -> NULL
 
 assign_index(stack);
 
-// Process:
+// With optimization:
+// size = 1
+// if (size == 1) return;  // No normalization needed
+// Result: Function returns early ✅
+//
+// Without optimization (still works):
 // size = 1
 // Array: [42]
 // Sorted: [42]
 // Index for 42: position 0
 // node->index = 0
-
+//
 // Result:
 // Stack:   [42]
 // Indices: [0]  ✅
+//
+// Note: Single element doesn't need normalization
+// since it's the only value (index 0 by default)
 ```
 
 ### Case 3: Two Elements
@@ -876,6 +956,38 @@ int		get_index_position(int *arr, int size, int value);
 
 ## Common Mistakes
 
+### Mistake 0: Not Validating Stack Parameter (CRITICAL!)
+
+```c
+// ❌ WRONG - Most critical defensive issue
+void assign_index(t_stack *stack)
+{
+    int size = stack_size(stack);  // If stack is NULL, CRASH!
+    // ...
+}
+```
+
+**✅ Correct (DEFENSIVE):**
+```c
+void assign_index(t_stack *stack)
+{
+    if (!stack)  // ← CRITICAL defensive check
+        return;
+
+    int size = stack_size(stack);  // Now safe
+    // ...
+}
+```
+
+**Why this is critical:**
+```
+Priority: 🔴 HIGHEST
+- Happens at function entry
+- Prevents crash before any work begins
+- NULL stack is a valid edge case
+- Must check before calling any stack functions
+```
+
 ### Mistake 1: Not Checking Malloc Failure
 
 ```c
@@ -894,7 +1006,16 @@ void assign_index(t_stack *stack)
 ```c
 int *values = malloc(sizeof(int) * size);
 if (!values)
-    return;  // Handle allocation failure
+    return;  // Handle allocation failure - no memory leaked yet
+```
+
+**Why this matters:**
+```
+Priority: 🔴 HIGH
+- Malloc can fail (out of memory)
+- Passing NULL to copy_values_to_array causes crash
+- Must check before using allocated pointer
+- Good news: No cleanup needed yet (no allocation succeeded)
 ```
 
 ### Mistake 2: Forgetting to Free Array

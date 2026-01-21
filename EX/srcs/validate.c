@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/15 14:24:17 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/20 19:09:12 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ int	is_int_range(long num)
 	return (0);
 }
 
-int	has_duplicate(t_stack *stack)
+int	has_duplicates(t_stack *stack)
 {
 	t_stack	*current;
 	t_stack	*compare;
@@ -76,6 +76,7 @@ int	has_duplicate(t_stack *stack)
 	current = stack;
 	while (current)
 	{
+		compare = current->next;
 		while (compare)
 		{
 			if (current->value == compare->value)

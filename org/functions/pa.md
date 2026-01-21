@@ -94,23 +94,25 @@ stack_b -> [7] -> [1] -> NULL
 
 ## Step-by-Step Implementation
 
-### Step 1: Validate Source Stack
+### Step 1: Validate Stacks
 
-**Check if stack B has elements to push:**
+**Check if operation is possible:**
 ```c
-if (!*stack_b)
-    return;  // Empty stack B, nothing to push
+if (!stack_a || !stack_b || !*stack_b)
+    return;
 ```
 
-**Why this check?**
-- Can't push from empty stack
-- Attempting to access NULL->next would crash
-- Graceful handling of edge case
+**Why these checks?**
+- `!stack_a` - Validates destination double pointer (defensive)
+- `!stack_b` - Validates source double pointer (defensive)
+- `!*stack_b` - Source must have at least 1 element to push
+
+**Note:** Unlike swap/rotate operations, push only needs **1 element** in the source stack (not 2), so we don't check `!(*stack_b)->next`.
 
 **Difference from pb:**
-- `pb` checks `*stack_a` (source is A)
-- `pa` checks `*stack_b` (source is B)
-- Everything else is the same logic!
+- `pb` checks `!*stack_a` (source is A)
+- `pa` checks `!*stack_b` (source is B)
+- Both check both double pointers for consistency
 
 ### Step 2: Save Pointer to Element Being Moved
 
@@ -149,7 +151,35 @@ temp    -> [3] -> [7] -> [1] -> NULL
                   ^ temp still points to old second element!
 ```
 
-### Step 4: Add Element to Stack A
+### Step 4: **CRITICAL** - Disconnect Moved Node
+
+**Clear temp's next pointer to prevent shared memory:**
+```c
+temp->next = NULL;
+```
+
+**Why this is CRITICAL:**
+```
+Before:
+temp    -> [3] -> [7] -> [1] -> NULL
+                  ^ Still connected to stack B!
+
+After:
+temp    -> [3] -> NULL
+           ^ Now isolated, safe to add to A
+
+Without this step:
+- temp shares nodes with stack B
+- Both stacks point to same nodes
+- Freeing causes DOUBLE FREE
+- Memory corruption!
+```
+
+**This is a common source of bugs:**
+- If you forget this line, both stacks will share nodes
+- When you free one stack, the other has dangling pointers
+- Results in double free errors or segfaults
+- Always disconnect before adding to destination!
 
 **Use stack_add_front to add temp to A:**
 ```c
@@ -166,15 +196,16 @@ temp->next = *stack_a;  // temp points to old top of A
 ```
 Before:
 stack_a -> [5] -> [8] -> NULL
-temp    -> [3] -> ???
+temp    -> [3] -> NULL  (disconnected from B!)
 
 After:
 stack_a -> [3] -> [5] -> [8] -> NULL
            ↑
          temp (same node, now in A!)
+stack_b -> [7] -> [1] -> NULL (completely separate)
 ```
 
-### Step 5: Print Operation
+### Step 6: Print Operation
 
 **Output "pa\n" if requested:**
 ```c
@@ -233,7 +264,24 @@ temp still points to [3] node:
 temp -> [3] -> [7] (still has old next pointer)
 ```
 
-### Step 4: Add to A
+### Step 4: Disconnect Node (CRITICAL!)
+
+```c
+temp->next = NULL;
+
+Before:
+temp -> [3] -> [7] (shares nodes with B!)
+
+After:
+temp -> [3] -> NULL (isolated)
+
+Why critical:
+- Prevents both stacks from sharing nodes
+- Avoids double free when freeing stacks
+- Essential for memory safety
+```
+
+### Step 5: Add to A
 
 ```c
 stack_add_front(&stack_a, temp);
@@ -246,9 +294,10 @@ Result:
 stack_a -> [3] -> [5] -> [8] -> NULL
            ↑
          temp
+stack_b -> [7] -> [1] -> NULL (completely separate!)
 ```
 
-### Step 5: Print
+### Step 6: Print
 
 ```c
 if (print)
@@ -483,9 +532,9 @@ No new allocations, just pointer shuffling!
 
 ```
 FUNCTION pa(stack_a, stack_b, print):
-    // Step 1: Check if source stack is empty
-    IF *stack_b is NULL:
-        RETURN  // Nothing to push
+    // Step 1: Validate stacks (consistent with other operations)
+    IF stack_a is NULL OR stack_b is NULL OR *stack_b is NULL:
+        RETURN  // Invalid pointers or nothing to push
 
     // Step 2: Save reference to element being moved
     temp = *stack_b
@@ -493,10 +542,13 @@ FUNCTION pa(stack_a, stack_b, print):
     // Step 3: Remove element from stack B
     *stack_b = (*stack_b)->next
 
-    // Step 4: Add element to stack A
+    // Step 4: CRITICAL - Disconnect node from old stack
+    temp->next = NULL  // Prevents shared memory between stacks!
+
+    // Step 5: Add element to stack A
     stack_add_front(stack_a, temp)
 
-    // Step 5: Print if requested
+    // Step 6: Print if requested
     IF print == 1:
         PRINT "pa\n"
 END FUNCTION
@@ -506,11 +558,12 @@ END FUNCTION
 
 ```
 FUNCTION pa(stack_a, stack_b, print):     FUNCTION pb(stack_a, stack_b, print):
-    IF *stack_b is NULL:                      IF *stack_a is NULL:
+    IF !stack_a OR !stack_b OR !*stack_b:     IF !stack_a OR !stack_b OR !*stack_a:
         RETURN                                    RETURN
 
     temp = *stack_b                           temp = *stack_a
     *stack_b = (*stack_b)->next               *stack_a = (*stack_a)->next
+    temp->next = NULL                         temp->next = NULL
     stack_add_front(stack_a, temp)            stack_add_front(stack_b, temp)
 
     IF print:                                 IF print:
@@ -518,23 +571,26 @@ FUNCTION pa(stack_a, stack_b, print):     FUNCTION pb(stack_a, stack_b, print):
 END FUNCTION                              END FUNCTION
 
 Differences:
-1. Source check: stack_b vs stack_a
+1. Source check: *stack_b vs *stack_a
 2. Remove from: B vs A
 3. Add to: A vs B
 4. Output: "pa" vs "pb"
+
+Similarity: Both check BOTH double pointers AND disconnect node!
 ```
 
 ### Inline Implementation
 
 ```
 FUNCTION pa_inline(stack_a, stack_b, print):
-    // Validate
-    IF *stack_b is NULL:
+    // Validate (consistent with sa, ra, etc.)
+    IF stack_a is NULL OR stack_b is NULL OR *stack_b is NULL:
         RETURN
 
     // Save and remove from B
     temp = *stack_b
     *stack_b = (*stack_b)->next
+    temp->next = NULL  // CRITICAL: disconnect!
 
     // Add to A (inline, without stack_add_front)
     temp->next = *stack_a
@@ -544,6 +600,11 @@ FUNCTION pa_inline(stack_a, stack_b, print):
     IF print:
         PRINT "pa\n"
 END FUNCTION
+
+Note: Even though we set temp->next twice, the first assignment
+to NULL is conceptually important for clarity. In practice, the
+second assignment overwrites it, but showing both makes the
+logic explicit: disconnect from old stack, then connect to new.
 ```
 
 ---
@@ -628,7 +689,28 @@ void pa(t_stack **stack_a, t_stack **stack_b, int print)
 }
 
 Result: temp is now in both stacks! Disaster!
-Correct: *stack_b = (*stack_b)->next;
+Correct: *stack_b = (*stack_b)->next; temp->next = NULL;
+```
+
+### Mistake 3b: Not Disconnecting Node (THIS BUG!)
+
+```c
+❌ WRONG:
+void pa(t_stack **stack_a, t_stack **stack_b, int print)
+{
+    if (!*stack_b)
+        return;
+    temp = *stack_b;
+    *stack_b = (*stack_b)->next;
+    // FORGOT: temp->next = NULL;
+    stack_add_front(stack_a, temp);
+}
+
+Result: temp->next still points to old stack B nodes!
+Both stacks share memory → Double free when freeing!
+This is THE MOST COMMON BUG in push operations!
+
+Correct: Always add temp->next = NULL; before stack_add_front!
 ```
 
 ### Mistake 4: Confusing pa and pb Logic
@@ -978,11 +1060,12 @@ void pa(t_stack **stack_a, t_stack **stack_b, int print)
 {
     t_stack *temp;
 
-    if (!*stack_b)
+    if (!stack_a || !stack_b || !*stack_b)
         return;
 
     temp = *stack_b;
     *stack_b = (*stack_b)->next;
+    temp->next = NULL;  // CRITICAL: disconnect from B!
     stack_add_front(stack_a, temp);
 
     if (print)
@@ -994,12 +1077,15 @@ void pa(t_stack **stack_a, t_stack **stack_b, int print)
 
 ## Summary: What pa Does
 
-1. **Validates** stack B has elements to push
+1. **Validates** both stack pointers and that B has elements to push
 2. **Saves** pointer to top element of B
 3. **Removes** element from B (updates head)
-4. **Adds** element to front of A
-5. **Prints** "pa\n" if requested
-6. **Time:** O(1) - constant time operation!
+4. **CRITICAL: Disconnects** temp node (sets next to NULL)
+5. **Adds** element to front of A
+6. **Prints** "pa\n" if requested
+7. **Time:** O(1) - constant time operation!
+
+**CRITICAL NOTE:** Step 4 (setting temp->next = NULL) is essential to prevent both stacks from sharing nodes, which would cause double free errors!
 
 **Key insight:** pa is the "return" operation. Every element pushed to B with pb must eventually come back to A with pa. Understanding this cycle is crucial for designing efficient sorting algorithms. Your goal is to use the minimum number of operations to cycle elements through B and return them to A in sorted order!
 

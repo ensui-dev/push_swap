@@ -243,23 +243,63 @@ After: arr[i] = -5, arr[min_idx] = 42
 
 ## Complete Algorithm Pseudocode
 
+### Basic Implementation (Using WHILE loops)
+
 ```
 FUNCTION sort_int_array(arr, size):
     // Outer loop: build sorted portion
-    FOR i FROM 0 TO size-2:
+    i = 0
+    WHILE i < size - 1:
         // Step 1: Assume first unsorted is minimum
         min_idx = i
 
         // Step 2: Find actual minimum in unsorted portion
-        FOR j FROM i+1 TO size-1:
+        j = i + 1
+        WHILE j < size:
             IF arr[j] < arr[min_idx]:
                 min_idx = j  // Update minimum index
+            j = j + 1
 
         // Step 3: Swap minimum to sorted position
         IF min_idx != i:  // Only swap if different
             temp = arr[i]
             arr[i] = arr[min_idx]
             arr[min_idx] = temp
+
+        i = i + 1
+
+    // Done! Array sorted in ascending order
+END FUNCTION
+```
+
+### Defensive Implementation
+
+```
+FUNCTION sort_int_array(arr, size):
+    // Step 1: DEFENSIVE - Validate inputs
+    IF arr is NULL OR size <= 1:
+        RETURN  // Nothing to sort
+
+    // Step 2: Outer loop - build sorted portion
+    i = 0
+    WHILE i < size - 1:
+        // Step 3: Assume first unsorted is minimum
+        min_idx = i
+
+        // Step 4: Find actual minimum in unsorted portion
+        j = i + 1
+        WHILE j < size:
+            IF arr[j] < arr[min_idx]:
+                min_idx = j  // Update minimum index
+            j = j + 1
+
+        // Step 5: Swap minimum to sorted position
+        IF min_idx != i:  // Only swap if necessary
+            temp = arr[i]
+            arr[i] = arr[min_idx]
+            arr[min_idx] = temp
+
+        i = i + 1
 
     // Done! Array sorted in ascending order
 END FUNCTION

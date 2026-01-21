@@ -126,7 +126,35 @@ Return i = 3
 
 ## Step-by-Step Implementation
 
-### Step 1: Initialize Search Position
+### Step 1: Validate Parameters (DEFENSIVE)
+
+**Check for NULL array and invalid size:**
+```c
+if (!arr || size <= 0)
+    return (-1);  // Invalid input, cannot search
+```
+
+**Why these checks are critical:**
+```
+!arr check:
+- Prevents reading from NULL pointer
+- If malloc failed in caller, arr is NULL
+- Segfault without this check
+- Priority: 🔴 HIGHEST
+
+size <= 0 check:
+- Prevents invalid loop bounds
+- Empty array has nothing to search
+- Negative size is meaningless
+- Priority: 🔴 HIGH
+
+Return -1:
+- Standard "not found" value
+- Negative index is invalid
+- Caller can detect error
+```
+
+### Step 2: Initialize Search Position
 
 **Start at beginning:**
 ```c
@@ -140,7 +168,7 @@ First element at position 0
 Linear search from left to right
 ```
 
-### Step 2: Iterate Through Array
+### Step 3: Iterate Through Array
 
 **Loop through positions:**
 ```c
@@ -151,15 +179,19 @@ while (i < size)
 }
 ```
 
-**Bounds checking:**
+**Bounds checking (DEFENSIVE):**
 ```
 i < size ensures we don't go past array end
 size = 4: valid indices are 0, 1, 2, 3
 Loop runs for i = 0, 1, 2, 3
 Stops when i = 4 (out of bounds)
+
+This prevents array overflow/buffer overrun
+Critical for memory safety
+If we used i <= size, would access arr[size] (invalid!)
 ```
 
-### Step 3: Compare Value at Each Position
+### Step 4: Compare Value at Each Position
 
 **Check if found:**
 ```c
@@ -177,46 +209,83 @@ For each position:
 - Is arr[i] equal to the target value?
 - YES: Return current position (i)
 - NO: Move to next position (i++)
+
+Note: Safe to access arr[i] because:
+- We validated arr != NULL (Step 1)
+- Loop condition ensures i < size (bounds check)
+- No buffer overrun possible
 ```
 
-### Step 4: Handle Not Found Case
+### Step 5: Handle Not Found Case
 
 **Fallback return:**
 ```c
 return (-1);  // Value not found
 ```
 
-**Why -1:**
+**Why -1 (DEFENSIVE):**
 ```
 Valid positions: 0 to size-1
 -1 indicates "not found"
 Standard convention for search failure
+
 In assign_index context, should never happen
 (all values in stack must exist in array)
+
+BUT: Defensive programming means handling impossible cases
+If somehow value not found:
+- Return -1 instead of undefined behavior
+- Caller can check for negative return
+- Prevents garbage index assignment
 ```
 
 ---
 
 ## Complete Algorithm Pseudocode
 
+### Defensive Implementation
+
 ```
 FUNCTION get_index_position(arr, size, value):
-    // Step 1: Initialize position
+    // Step 1: DEFENSIVE - Validate inputs
+    IF arr is NULL OR size <= 0:
+        RETURN -1  // Cannot search, return "not found"
+
+    // Step 2: Initialize position
     i = 0
 
-    // Step 2: Search through array
+    // Step 3: Search through array with bounds check
     WHILE i < size:
-        // Step 3: Check if current position has value
+        // Step 4: Check if current position has value
         IF arr[i] == value:
             RETURN i  // Found! Return position
 
         // Move to next position
         i = i + 1
 
-    // Step 4: Not found (should not happen in assign_index)
+    // Step 5: Not found (defensive fallback)
     RETURN -1
 END FUNCTION
 ```
+
+### Defensive Checklist
+
+**✅ Input validation:**
+- Check arr != NULL (prevent NULL dereference)
+- Check size > 0 (prevent invalid bounds)
+
+**✅ Loop safety:**
+- Bounds check: i < size (prevent buffer overrun)
+- No off-by-one errors (use <, not <=)
+
+**✅ Safe array access:**
+- arr[i] only accessed after validation
+- Loop guarantees i is in valid range [0, size-1]
+
+**✅ Error return:**
+- Return -1 for not found
+- Negative value distinguishes from valid indices
+- Caller can detect and handle error
 
 ---
 
@@ -669,7 +738,7 @@ int pos = get_index_position(arr, size, 42);
 // Now position represents rank
 ```
 
-### Mistake 4: Not Checking NULL Array
+### Mistake 4: Not Checking NULL Array (CRITICAL!)
 
 ```c
 // ❌ WRONG - Potential NULL pointer dereference
@@ -686,23 +755,45 @@ int get_index_position(int *arr, int size, int value)
 }
 ```
 
-**✅ Better:**
+**✅ DEFENSIVE (Recommended):**
 ```c
 int get_index_position(int *arr, int size, int value)
 {
     int i;
 
-    if (!arr || size <= 0)
+    // CRITICAL: Validate inputs first
+    if (!arr || size <= 0)  // ← Both checks needed
         return (-1);
+
     i = 0;
     while (i < size)
     {
-        if (arr[i] == value)
+        if (arr[i] == value)  // Now guaranteed safe
             return (i);
         i++;
     }
     return (-1);
 }
+```
+
+**Why these checks are critical:**
+```
+!arr check:
+- Priority: 🔴 HIGHEST
+- Reading from NULL pointer causes segfault
+- Can happen if malloc failed in caller
+- Must check before ANY array access
+- Cost: 1 comparison (negligible)
+
+size <= 0 check:
+- Priority: 🔴 HIGH
+- Prevents invalid loop bounds
+- Empty array (size=0) has nothing to search
+- Negative size is programming error
+- Cost: 1 comparison (negligible)
+
+Combined: Total cost is 2 comparisons
+Benefit: Prevents crash, well worth it
 ```
 
 ### Mistake 5: Returning Wrong Type

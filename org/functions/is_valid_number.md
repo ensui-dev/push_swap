@@ -488,6 +488,142 @@ int result6 = is_valid_number("4+2");   // 0 (sign in middle invalid)
 
 ---
 
+## Defensive Checks
+
+### Input Validation
+| Check | Priority | Failure Mode | Consequence |
+|-------|----------|--------------|-------------|
+| `!str` | **CRITICAL** | NULL pointer | SEGFAULT when accessing `str[0]` |
+| `!str[0]` | **HIGH** | Empty string | Attempting to validate nothing, invalid format |
+
+### Why These Checks Matter
+
+1. **NULL pointer check (CRITICAL):**
+   - **Without:** `str[0]` will crash immediately if str is NULL
+   - **With:** Returns 0 safely, indicating invalid input
+   - **Cost:** O(1) - single comparison
+   - **Benefit:** Prevents crash, allows safe error handling in caller
+   - **Defensive Priority:** MUST be first check (before any pointer dereference)
+
+2. **Empty string check (HIGH):**
+   - **Without:** Would pass through and incorrectly validate empty input
+   - **With:** Returns 0, correctly rejecting empty string as invalid number
+   - **Cost:** O(1) - single comparison (combined with NULL check)
+   - **Benefit:** Ensures at least one character exists before parsing
+   - **Defensive Priority:** Must be checked immediately after NULL
+
+### Why Combined Check is Best Practice
+
+```c
+// RECOMMENDED: Combined check (efficient and clear)
+if (!str || !str[0])
+    return (0);
+```
+
+**Advantages:**
+- **Safety:** NULL check prevents dereferencing NULL pointer
+- **Efficiency:** Short-circuit evaluation (if !str is true, !str[0] never executes)
+- **Clarity:** Single line handles both edge cases
+- **42 Norm compliant:** Concise, readable
+
+**Alternative (less efficient):**
+```c
+// Also correct but verbose
+if (!str)
+    return (0);
+if (!str[0])
+    return (0);
+```
+
+### Defensive Implementation Strategy
+
+**Critical Guard (Line 1):** NULL and empty validation
+**Content Validation:** All remaining checks validate string content
+**Return Value:** 0 = invalid format, 1 = valid format
+**No Side Effects:** Read-only operation, safe to call anytime
+
+### String Content Validation (Defensive Throughout)
+
+After the critical NULL/empty checks, the function continues with defensive parsing:
+
+1. **Sign processing (defensive loop):**
+   ```c
+   while (str[i] == '+' || str[i] == '-')
+       i++;
+   ```
+   - Handles 0 to unlimited signs
+   - Never accesses beyond string bounds (relies on NULL terminator)
+   - No index validation needed (NULL terminator prevents overflow)
+
+2. **Post-sign validation (defensive check):**
+   ```c
+   if (!str[i])
+       return (0);  // Signs only, no digits
+   ```
+   - Catches edge case: input is ONLY signs ("+", "--", "+-+-")
+   - CRITICAL: Must check after sign loop
+   - Returns 0 for invalid format
+
+3. **Digit validation loop (defensive iteration):**
+   ```c
+   while (str[i])
+   {
+       if (!ft_isdigit(str[i]))
+           return (0);  // Non-digit found
+       i++;
+   }
+   ```
+   - Validates every remaining character
+   - ft_isdigit provides defensive character validation
+   - Returns 0 on first invalid character
+   - NULL terminator ensures loop termination
+
+### Defensive Validation Flow
+
+```
+Input: str
+
+┌─────────────────────────────────────┐
+│ CRITICAL: NULL/Empty Check          │
+│ if (!str || !str[0]) return 0;      │
+│ ✓ Prevents SEGFAULT                 │
+│ ✓ Rejects empty input                │
+└─────────────────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────┐
+│ HIGH: Skip All Signs                │
+│ while (str[i] == '+' || str[i] == '-')│
+│ ✓ Handles multiple signs             │
+│ ✓ NULL terminator prevents overflow  │
+└─────────────────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────┐
+│ HIGH: Check Digits Exist            │
+│ if (!str[i]) return 0;              │
+│ ✓ Catches signs-only input          │
+│ ✓ Ensures at least one digit        │
+└─────────────────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────┐
+│ MEDIUM: Validate All Digits         │
+│ while (str[i])                      │
+│   if (!ft_isdigit(str[i])) return 0;│
+│ ✓ Rejects non-digit characters      │
+│ ✓ NULL terminator ensures exit      │
+└─────────────────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────┐
+│ SUCCESS: Valid Format               │
+│ return 1;                           │
+└─────────────────────────────────────┘
+```
+
+---
+
 ## Time & Space Complexity
 
 ### Time Complexity: O(n)
@@ -787,6 +923,48 @@ assert(is_valid_number("4 2") == 0);    // Space
 assert(is_valid_number("4\t2") == 0);   // Tab
 assert(is_valid_number("4\n2") == 0);   // Newline
 ```
+
+---
+
+## Defensive Programming Checklist
+
+### Implementation Verification
+- [ ] **NULL Check** - `if (!str || !str[0]) return 0;` is first line
+- [ ] **Combined check** - Use short-circuit evaluation for efficiency
+- [ ] **Sign loop** - `while (str[i] == '+' || str[i] == '-')` handles multiple signs
+- [ ] **Post-sign validation** - `if (!str[i]) return 0;` catches signs-only input
+- [ ] **Digit validation** - `if (!ft_isdigit(str[i]))` checks each character
+- [ ] **Loop termination** - Relies on NULL terminator (`while (str[i])`)
+- [ ] **Return values** - 0 for invalid, 1 for valid format
+
+### Testing Checklist
+- [ ] **NULL input** - `is_valid_number(NULL)` returns 0
+- [ ] **Empty string** - `is_valid_number("")` returns 0
+- [ ] **Signs only** - `is_valid_number("+")`, `is_valid_number("--")` return 0
+- [ ] **Valid positive** - `is_valid_number("42")` returns 1
+- [ ] **Valid negative** - `is_valid_number("-42")` returns 1
+- [ ] **Multiple signs** - `is_valid_number("--42")`, `is_valid_number("+-42")` return 1
+- [ ] **Leading zeros** - `is_valid_number("007")`, `is_valid_number("-007")` return 1
+- [ ] **Invalid characters** - `is_valid_number("4a2")`, `is_valid_number("4.2")` return 0
+- [ ] **Sign in wrong place** - `is_valid_number("42+")`, `is_valid_number("4+2")` return 0
+
+### Edge Case Testing
+- [ ] **Boundary values** - INT_MIN string "-2147483648" returns 1 (format valid)
+- [ ] **Boundary values** - INT_MAX string "2147483647" returns 1 (format valid)
+- [ ] **Overflow strings** - "999999999999999999" returns 1 (format valid, range check elsewhere)
+- [ ] **Combined edge cases** - "--007", "+-00123" return 1
+
+### Defensive Priority Summary
+1. **CRITICAL** - NULL pointer check (prevents SEGFAULT)
+2. **HIGH** - Empty string check (prevents incorrect validation)
+3. **HIGH** - Post-sign digits check (ensures valid format)
+4. **MEDIUM** - Character-by-character validation (content correctness)
+
+### Integration Testing
+- [ ] **With ft_atol** - Valid strings are correctly converted
+- [ ] **With init_stack_a** - Invalid strings cause proper error handling
+- [ ] **Error propagation** - Caller handles return value 0 correctly
+- [ ] **No memory issues** - Read-only, no allocations, no leaks
 
 ---
 

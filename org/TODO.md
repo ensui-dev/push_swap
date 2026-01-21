@@ -282,123 +282,123 @@
     - [x] Handle edge cases (NULL double pointer, empty stack, 1 element)
     - [x] If print=1, write "sb\n" to stdout
 
-  - [ ] Write `ss(t_stack **stack_a, t_stack **stack_b, int print)` function
-    - [ ] Call sa with print=0
-    - [ ] Call sb with print=0
-    - [ ] If print=1, write "ss\n" to stdout
+  - [x] Write `ss(t_stack **stack_a, t_stack **stack_b, int print)` function
+    - [x] Call sa with print=0
+    - [x] Call sb with print=0
+    - [x] If print=1, write "ss\n" to stdout
 
 ### 4.2 Push Operations
-- [ ] Create `srcs/operations_push.c`
-  - [ ] Write `pa(t_stack **stack_a, t_stack **stack_b, int print)` function
-    - [ ] Take top element from B, push to A
-    - [ ] Handle edge case (B is empty - do nothing)
-    - [ ] If print=1, write "pa\n" to stdout
-    - [ ] Implementation:
-      - [ ] Save top of B
-      - [ ] Remove top from B (update head)
-      - [ ] Add saved node to top of A
+- [x] Create `srcs/operations_push.c`
+  - [x] Write `pa(t_stack **stack_a, t_stack **stack_b, int print)` function
+    - [x] Take top element from B, push to A
+    - [x] Handle edge case (B is empty - do nothing)
+    - [x] If print=1, write "pa\n" to stdout
+    - [x] Implementation:
+      - [x] Save top of B
+      - [x] Remove top from B (update head)
+      - [x] Add saved node to top of A
 
-  - [ ] Write `pb(t_stack **stack_a, t_stack **stack_b, int print)` function
-    - [ ] Take top element from A, push to B
-    - [ ] Handle edge case (A is empty - do nothing)
-    - [ ] If print=1, write "pb\n" to stdout
+  - [x] Write `pb(t_stack **stack_a, t_stack **stack_b, int print)` function
+    - [x] Take top element from A, push to B
+    - [x] Handle edge case (A is empty - do nothing)
+    - [x] If print=1, write "pb\n" to stdout
 
 ### 4.3 Rotate Operations
-- [ ] Create `srcs/operations_rotate.c`
-  - [ ] Write `ra(t_stack **stack_a, int print)` function
-    - [ ] Shift all elements up by 1 (first becomes last)
-    - [ ] Handle edge cases (NULL, 1 element)
-    - [ ] If print=1, write "ra\n" to stdout
-    - [ ] Implementation:
-      - [ ] Save first node
-      - [ ] Update head to second node
-      - [ ] Find last node
-      - [ ] Attach saved first node to end
-      - [ ] Set its next to NULL
+- [x] Create `srcs/operations_rotate.c`
+  - [x] Write `ra(t_stack **stack_a, int print)` function
+    - [x] Shift all elements up by 1 (first becomes last)
+    - [x] Handle edge cases (NULL, 1 element)
+    - [x] If print=1, write "ra\n" to stdout
+    - [x] Implementation:
+      - [x] Save first node
+      - [x] Update head to second node
+      - [x] Find last node
+      - [x] Attach saved first node to end
+      - [x] Set its next to NULL
 
-  - [ ] Write `rb(t_stack **stack_b, int print)` function
-    - [ ] Same as ra but for stack B
-    - [ ] If print=1, write "rb\n" to stdout
+  - [x] Write `rb(t_stack **stack_b, int print)` function
+    - [x] Same as ra but for stack B
+    - [x] If print=1, write "rb\n" to stdout
 
-  - [ ] Write `rr(t_stack **stack_a, t_stack **stack_b, int print)` function
-    - [ ] Call ra with print=0
-    - [ ] Call rb with print=0
-    - [ ] If print=1, write "rr\n" to stdout
+  - [x] Write `rr(t_stack **stack_a, t_stack **stack_b, int print)` function
+    - [x] Call ra with print=0
+    - [x] Call rb with print=0
+    - [x] If print=1, write "rr\n" to stdout
 
 ### 4.4 Reverse Rotate Operations
-- [ ] Create `srcs/operations_reverse_rotate.c`
-  - [ ] Write `rra(t_stack **stack_a, int print)` function
-    - [ ] Shift all elements down by 1 (last becomes first)
-    - [ ] Handle edge cases (NULL, 1 element)
-    - [ ] If print=1, write "rra\n" to stdout
-    - [ ] Implementation:
-      - [ ] Find last node
-      - [ ] Find second-to-last node
-      - [ ] Detach last node (set second-to-last next to NULL)
-      - [ ] Attach last node to beginning
-      - [ ] Update head to last node
+- [x] Create `srcs/operations_reverse.c`
+  - [x] Write `rra(t_stack **stack_a, int print)` function
+    - [x] Shift all elements down by 1 (last becomes first)
+    - [x] Handle edge cases (NULL, 1 element)
+    - [x] If print=1, write "rra\n" to stdout
+    - [x] Implementation:
+      - [x] Find last node
+      - [x] Find second-to-last node
+      - [x] Detach last node (set second-to-last next to NULL)
+      - [x] Attach last node to beginning
+      - [x] Update head to last node
 
-  - [ ] Write `rrb(t_stack **stack_b, int print)` function
-    - [ ] Same as rra but for stack B
-    - [ ] If print=1, write "rrb\n" to stdout
+  - [x] Write `rrb(t_stack **stack_b, int print)` function
+    - [x] Same as rra but for stack B
+    - [x] If print=1, write "rrb\n" to stdout
 
-  - [ ] Write `rrr(t_stack **stack_a, t_stack **stack_b, int print)` function
-    - [ ] Call rra with print=0
-    - [ ] Call rrb with print=0
-    - [ ] If print=1, write "rrr\n" to stdout
+  - [x] Write `rrr(t_stack **stack_a, t_stack **stack_b, int print)` function
+    - [x] Call rra with print=0
+    - [x] Call rrb with print=0
+    - [x] If print=1, write "rrr\n" to stdout
 
 ### 4.5 Operation Testing
-- [ ] Test each operation individually
-  - [ ] Create test stack with known values
-  - [ ] Execute operation
-  - [ ] Verify stack state manually
-  - [ ] Test edge cases for each operation
+- [x] Test each operation individually
+  - [x] Create test stack with known values
+  - [x] Execute operation
+  - [x] Verify stack state manually
+  - [x] Test edge cases for each operation
 
 ---
 
 ## Phase 5: Index Normalization (Optimization)
 
 ### 5.1 Index Mapping Implementation
-- [ ] Create `srcs/index.c`
-  - [ ] Write `assign_index(t_stack *stack_a)` function
-    - [ ] Create array to store values
-    - [ ] Copy all values from stack to array
-    - [ ] Sort array in ascending order (use simple sorting)
-    - [ ] Assign indices: smallest value gets index 0, next gets 1, etc.
-    - [ ] Iterate through stack and assign corresponding index to each node
-    - [ ] Free temporary array
-    - [ ] Purpose: normalize values to 0...N-1 range
+- [x] Create `srcs/index.c`
+  - [x] Write `assign_index(t_stack *stack_a)` function
+    - [x] Create array to store values
+    - [x] Copy all values from stack to array
+    - [x] Sort array in ascending order (use simple sorting)
+    - [x] Assign indices: smallest value gets index 0, next gets 1, etc.
+    - [x] Iterate through stack and assign corresponding index to each node
+    - [x] Free temporary array
+    - [x] Purpose: normalize values to 0...N-1 range
 
-  - [ ] Write `get_index_position(int value, int *sorted_arr, int size)` function
-    - [ ] Binary search or linear search to find value in sorted array
-    - [ ] Return index position
+  - [x] Write `get_index_position(int value, int *sorted_arr, int size)` function
+    - [x] Binary search or linear search to find value in sorted array
+    - [x] Return index position
 
-  - [ ] Write `copy_values_to_array(t_stack *stack, int **arr)` function
-    - [ ] Allocate array of size stack_size
-    - [ ] Copy each value from stack to array
-    - [ ] Return array
+  - [x] Write `copy_values_to_array(t_stack *stack, int **arr)` function
+    - [x] Allocate array of size stack_size
+    - [x] Copy each value from stack to array
+    - [x] Return array
 
 ### 5.2 Array Sorting Helper
-- [ ] Add to `srcs/index.c`
-  - [ ] Write `sort_int_array(int *arr, int size)` function
-    - [ ] Use simple sorting (bubble sort is fine for this purpose)
-    - [ ] Sort array in ascending order
-    - [ ] This is not the stack sorting - just helper for index assignment
+- [x] Add to `srcs/index.c`
+  - [x] Write `sort_int_array(int *arr, int size)` function
+    - [x] Use simple sorting (bubble sort is fine for this purpose)
+    - [x] Sort array in ascending order
+    - [x] This is not the stack sorting - just helper for index assignment
 
 ---
 
 ## Phase 6: Small Number Sorting (Hardcoded Solutions)
 
 ### 6.1 Two Numbers
-- [ ] Create `srcs/sort_small.c`
-  - [ ] Write `sort_two(t_stack **stack_a)` function
-    - [ ] If first > second, execute sa
-    - [ ] Else already sorted, do nothing
-    - [ ] Total operations: 0-1
+- [x] Create `srcs/sort_small.c`
+  - [x] Write `sort_two(t_stack **stack_a)` function
+    - [x] If first > second, execute sa
+    - [x] Else already sorted, do nothing
+    - [x] Total operations: 0-1
 
 ### 6.2 Three Numbers (Optimal)
-- [ ] Add to `srcs/sort_small.c`
-  - [ ] Write `sort_three(t_stack **stack_a)` function
+- [x] Add to `srcs/sort_small.c`
+  - [x] Write `sort_three(t_stack **stack_a)` function
     - [ ] Identify positions of min, max, and middle values
     - [ ] Use optimal case analysis:
       - [ ] Case 1: [3,2,1] → sa + rra (or ra + sa)

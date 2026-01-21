@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/19 13:37:35 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/20 22:47:24 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ static t_stack	*append_node(t_stack **stack, char *str)
 	return (node);
 }
 
-static t_stack *build_stack(char **numbers)
+static t_stack	*build_stack(char **numbers)
 {
 	t_stack	*stack;
 	int		i;
@@ -66,7 +66,7 @@ t_stack	*init_stack_a(int argc, char **argv)
 	stack_a = build_stack(numbers);
 	if (!stack_a)
 	{
-		if(argc == 2)
+		if (argc == 2)
 			free_split(numbers);
 		return (NULL);
 	}

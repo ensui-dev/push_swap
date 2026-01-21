@@ -243,6 +243,144 @@ return 0 (OUT OF RANGE) ✗
 
 ---
 
+## Defensive Checks
+
+### Input Validation
+| Check | Priority | Failure Mode | Consequence |
+|-------|----------|--------------|-------------|
+| `num > INT_MAX` | **CRITICAL** | Overflow | Silent truncation to negative value on cast to int |
+| `num < INT_MIN` | **CRITICAL** | Underflow | Silent truncation to positive value on cast to int |
+| (uses `long` type) | **CRITICAL** | Type safety | Allows detection before cast happens |
+
+### Why These Checks Matter
+
+#### 1. Overflow Detection (num > INT_MAX) - CRITICAL
+- **Without:** Casting 2147483648L to int wraps to -2147483648
+- **With:** Returns 0, triggering error before bad cast
+- **Cost:** O(1) - single comparison
+- **Benefit:** Prevents silent data corruption
+- **Example:**
+  ```c
+  long value = 2147483648L;  // INT_MAX + 1
+  // Without check: (int)value = -2147483648 (WRONG!)
+  // With check: is_int_range(value) = 0 (DETECTED!)
+  ```
+
+#### 2. Underflow Detection (num < INT_MIN) - CRITICAL
+- **Without:** Casting -2147483649L to int wraps to 2147483647
+- **With:** Returns 0, triggering error before bad cast
+- **Cost:** O(1) - single comparison
+- **Benefit:** Prevents silent data corruption
+- **Example:**
+  ```c
+  long value = -2147483649L;  // INT_MIN - 1
+  // Without check: (int)value = 2147483647 (WRONG!)
+  // With check: is_int_range(value) = 0 (DETECTED!)
+  ```
+
+#### 3. Long Type Strategy - CRITICAL
+- **Why long:** 64-bit long can hold values outside 32-bit int range
+- **Detection window:** Values from 2^31 to 2^63 are valid long but invalid int
+- **Safety guarantee:** Check happens BEFORE destructive cast
+- **Type flow:**
+  ```
+  String → ft_atol() → long value → is_int_range() → int (safe cast)
+                                          ↑
+                                    DEFENSIVE GATE
+  ```
+
+### Defensive Implementation Strategy
+
+**Single Responsibility:** Only validates range, doesn't perform conversion
+**No Side Effects:** Read-only comparison, safe to call multiple times
+**Boolean Return:** Clear success (1) or failure (0) indication
+**Type Preservation:** Uses long parameter to preserve full value during check
+
+### What Happens Without These Checks
+
+```
+SCENARIO: User input "2147483648"
+─────────────────────────────────────────────────────
+
+WITHOUT is_int_range:
+1. ft_atol("2147483648") → 2147483648L ✓
+2. (int)2147483648L → -2147483648 ✗ SILENT OVERFLOW!
+3. Stack contains wrong value
+4. Sorting produces incorrect results
+5. No error indication to user
+
+WITH is_int_range:
+1. ft_atol("2147483648") → 2147483648L ✓
+2. is_int_range(2147483648L) → 0 ✗ DETECTED!
+3. Error cleanup triggered
+4. Print "Error" to stderr
+5. Program exits cleanly
+6. No corrupted data
+```
+
+### Protection Against Integer Wraparound
+
+**The Wraparound Problem:**
+```
+32-bit signed integer representation:
+INT_MAX:     01111111 11111111 11111111 11111111 = 2,147,483,647
+INT_MAX + 1: 10000000 00000000 00000000 00000000 = -2,147,483,648
+                                                      ↑ Sign bit flips!
+
+INT_MIN:     10000000 00000000 00000000 00000000 = -2,147,483,648
+INT_MIN - 1: 01111111 11111111 11111111 11111111 = 2,147,483,647
+                                                      ↑ Wraps around!
+```
+
+**How is_int_range Prevents This:**
+- Checks value while still in long type (64-bit)
+- Detects overflow BEFORE truncation to int (32-bit)
+- Returns failure code instead of allowing bad cast
+- Calling code can handle error appropriately
+
+### Critical Integration Points
+
+This function serves as the defensive barrier in the validation pipeline:
+
+```
+VALIDATION PIPELINE WITH DEFENSIVE CHECKS:
+─────────────────────────────────────────────────────
+
+Input: "2147483648"
+    ↓
+[DEFENSIVE CHECK 1: Format Validation]
+is_valid_number("2147483648")
+→ Contains only digits and optional sign? YES ✓
+→ Valid number format? YES ✓
+    ↓
+[CONVERSION TO LONG TYPE]
+ft_atol("2147483648")
+→ Converts to 2147483648L ✓
+→ No overflow in long (64-bit can hold this)
+    ↓
+[DEFENSIVE CHECK 2: Range Validation] ← is_int_range
+is_int_range(2147483648L)
+→ Is 2147483648 > INT_MAX (2147483647)? YES ✗
+→ OUT OF RANGE DETECTED!
+→ Return 0 (failure)
+    ↓
+[ERROR HANDLING]
+Cleanup and exit
+→ Print "Error"
+→ Free allocated memory
+→ Exit program
+→ CORRUPTED DATA PREVENTED ✓
+```
+
+**Without this defensive check:**
+- Value proceeds to cast: `(int)2147483648L`
+- Becomes -2147483648 (silent overflow)
+- Corrupted value enters your stack
+- Program sorts wrong values
+- No indication of error
+
+---
+
 ## Complete Algorithm Pseudocode
 
 ```

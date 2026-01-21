@@ -221,19 +221,55 @@ No memory leaks ✓
 
 ---
 
-## Complete Algorithm Pseudocode
+## Defensive Checks
 
+### Input Validation
+| Check | Priority | Failure Mode | Consequence |
+|-------|----------|--------------|-------------|
+| `!stack` | **CRITICAL** | NULL double pointer | SEGFAULT when accessing `*stack` |
+| `!*stack` | **HIGH** | NULL stack content | Use-after-free attempt (valid case: already freed) |
+| Set `*stack = NULL` after freeing | **CRITICAL** | Dangling pointer | Double-free vulnerability, use-after-free |
+
+### Why These Checks Matter
+
+1. **NULL double pointer check (`!stack`) - CRITICAL:**
+   - **Without:** `if (!*stack)` will crash immediately if stack pointer itself is NULL
+   - **With:** Returns safely, no operation needed
+   - **Cost:** O(1) - single comparison
+   - **Benefit:** Prevents SEGFAULT, allows safe error handling
+
+2. **NULL stack content check (`!*stack`) - HIGH:**
+   - **Without:** Will try to free already-freed or uninitialized memory
+   - **With:** Returns early if stack already empty/freed
+   - **Cost:** O(1) - single comparison
+   - **Benefit:** Idempotent operation (safe to call multiple times)
+   - **Valid scenario:** Stack already freed, pointer not yet nullified
+
+3. **Setting pointer to NULL after free - CRITICAL:**
+   - **Without:** Leaves dangling pointer, caller might use freed memory
+   - **With:** Marks stack as freed, subsequent access caught by NULL check
+   - **Cost:** O(1) - single assignment
+   - **Benefit:** Prevents double-free, prevents use-after-free
+   - **Why it matters:** Allows multiple calls to free_stack safely
+
+### Defensive Implementation Strategy
+**Double Guard:** Two checks needed (NULL validation + NULL content)
+**Nullification:** Critical to set `*stack = NULL` after freeing
+**Side Effects:** Modifies caller's pointer (by design, using `**`)
+**Idempotency:** Safe to call multiple times on same pointer
+
+---
+
+## Implementation Pseudocode
+
+### Basic Implementation (Unsafe)
 ```
 FUNCTION free_stack(stack):
-    // Step 1: Safety check
-    IF stack is NULL OR *stack is NULL:
-        RETURN  // Nothing to free
-
-    // Step 2: Initialize traversal
+    // Step 1: Initialize traversal
     current = *stack
     temp = NULL
 
-    // Step 3: Free each node
+    // Step 2: Free each node
     WHILE current is not NULL:
         // Save next node before freeing
         temp = current.next
@@ -244,8 +280,40 @@ FUNCTION free_stack(stack):
         // Move to next node
         current = temp
 
-    // Step 4: Set stack pointer to NULL
+    // Step 3: Set stack pointer to NULL
     *stack = NULL
+END FUNCTION
+```
+**Problems:** No validation, crashes on NULL input, no safety checks
+
+### Defensive Implementation (Full)
+```
+FUNCTION free_stack(stack):
+    // DEFENSIVE STEP 1: Validate double pointer (CRITICAL)
+    IF stack is NULL:
+        RETURN  // NULL pointer passed, nothing to do
+
+    // DEFENSIVE STEP 2: Validate stack content (HIGH)
+    IF *stack is NULL:
+        RETURN  // Stack already empty or freed
+
+    // Step 3: Initialize traversal
+    current = *stack
+    temp = NULL
+
+    // Step 4: Free each node
+    WHILE current is not NULL:
+        // Save next node before freeing
+        temp = current.next
+
+        // Free current node
+        free(current)
+
+        // Move to next node
+        current = temp
+
+    // DEFENSIVE STEP 5: Nullify pointer (CRITICAL)
+    *stack = NULL  // Prevents double-free and use-after-free
 END FUNCTION
 ```
 
@@ -320,7 +388,7 @@ Total: O(1) - constant space
 
 ## Common Mistakes to Avoid
 
-### Mistake 1: Not Saving Next Pointer
+### Mistake 1: Not Saving Next Pointer [CRITICAL]
 
 ```c
 ❌ WRONG:
@@ -338,8 +406,11 @@ while (current)
     current = temp;  // Use saved value
 }
 ```
+**Severity:** CRITICAL - Undefined behavior, use-after-free
+**Consequence:** Immediate crash or memory corruption
+**Defensive Priority:** Must save next pointer before freeing
 
-### Mistake 2: Not Setting to NULL
+### Mistake 2: Not Setting to NULL [CRITICAL]
 
 ```c
 ❌ WRONG:
@@ -355,8 +426,11 @@ Calling code might try to use freed memory
 ✓ CORRECT:
 *stack = NULL;  // Mark as freed
 ```
+**Severity:** CRITICAL - Double-free vulnerability, use-after-free
+**Consequence:** Heap corruption, security vulnerability
+**Defensive Priority:** Must nullify pointer after freeing
 
-### Mistake 3: Using Wrong Parameter Type
+### Mistake 3: Using Wrong Parameter Type [HIGH]
 
 ```c
 ❌ WRONG:
@@ -372,8 +446,11 @@ void free_stack(t_stack **stack)
     *stack = NULL;  // Sets caller's pointer
 }
 ```
+**Severity:** HIGH - Leaves dangling pointer in caller
+**Consequence:** Caller retains invalid pointer, potential use-after-free
+**Defensive Priority:** Use double pointer to modify caller's variable
 
-### Mistake 4: Recursive Implementation
+### Mistake 4: Recursive Implementation [MEDIUM]
 
 ```c
 ❌ LESS EFFICIENT:
@@ -391,6 +468,29 @@ Problem: Stack overflow for large lists
 ✓ BETTER:
 // Use iterative approach (as shown)
 ```
+**Severity:** MEDIUM - Stack overflow for large inputs (500+ nodes)
+**Consequence:** Program crash on large stacks
+**Defensive Priority:** Use iterative loop instead of recursion
+
+### Mistake 5: Not Checking for NULL [CRITICAL]
+
+```c
+❌ WRONG:
+void free_stack(t_stack **stack)
+{
+    // No NULL checks!
+    t_stack *current = *stack;  // SEGFAULT if stack is NULL
+    while (current)
+        ...
+}
+
+✓ CORRECT:
+if (!stack || !*stack)
+    return;
+```
+**Severity:** CRITICAL - SEGFAULT on NULL input
+**Consequence:** Immediate crash
+**Defensive Priority:** First check in function
 
 ---
 

@@ -120,7 +120,24 @@ sort_small handles sizes 2-5 only!
 
 ## Step-by-Step Implementation
 
-### Step 1: Get Stack Size
+### Step 1: Validate Input (DEFENSIVE)
+
+```c
+if (!stack_a || !*stack_a)
+    return;
+```
+
+**Defensive checks:**
+```
+!stack_a: Double pointer is NULL → Can't proceed (CRITICAL)
+!*stack_a: Stack is empty → Nothing to sort (valid case, return early)
+
+These checks prevent SEGFAULT when calling stack_size or delegated functions.
+```
+
+**Defensive Priority:** CRITICAL - Must validate before any dereference
+
+### Step 2: Get Stack Size
 
 ```c
 int size = stack_size(*stack_a);
@@ -131,9 +148,11 @@ int size = stack_size(*stack_a);
 Need to know how many elements to determine which function to call
 stack_size() traverses the stack and counts nodes
 O(n) operation, but n is at most 5, so O(1) in practice
+
+Note: stack_size has its own NULL check, but we validate first for clarity
 ```
 
-### Step 2: Route Based on Size
+### Step 3: Route Based on Size
 
 ```c
 if (size == 2)
@@ -151,9 +170,13 @@ else if (size == 5)
 Match size to appropriate function
 size 2-3: Only need stack_a (no push operations)
 size 4-5: Need both stacks (use push operations)
+size 0-1: No case matches, returns early (already sorted)
+size >5: No case matches, wrong function called (caller error)
 ```
 
-### Step 3: Function Returns
+**Defensive note:** Each delegated function has its own defensive checks
+
+### Step 4: Function Returns
 
 ```c
 // No explicit return needed (void function)
@@ -166,12 +189,61 @@ The specialized function has sorted the stack
 sort_small returns control to caller
 Stack A is now fully sorted
 Stack B is empty (if it was used)
+
+Edge cases (size 0, 1, or >5):
+No matching case, function returns immediately
 ```
+
+---
+
+## Defensive Checks
+
+### Input Validation
+| Check | Priority | Failure Mode | Consequence |
+|-------|----------|--------------|-------------|
+| `!stack_a` | **CRITICAL** | NULL double pointer for stack A | SEGFAULT when dereferencing `*stack_a` |
+| `!stack_b` | **MEDIUM** | NULL double pointer for stack B | SEGFAULT if size 4-5 (uses stack B) |
+| `!*stack_a` | **MEDIUM** | Empty stack | stack_size returns 0, safe early return |
+| stack_size failure | **LOW** | stack_size has own checks | Delegated to stack_size function |
+
+### Why These Checks Matter
+
+1. **NULL stack_a check (`!stack_a`) - CRITICAL:**
+   - **Without:** Dereferencing `*stack_a` in stack_size call crashes immediately
+   - **With:** Returns safely before attempting size calculation
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** Prevents crash, essential for router function safety
+
+2. **NULL stack_b check (`!stack_b`) - MEDIUM:**
+   - **Without:** sort_four/sort_five will crash when using stack B
+   - **With:** Can validate early or delegate to size-specific functions
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** Prevents crash for 4-5 element sorts
+
+3. **Empty stack handling (`!*stack_a`) - MEDIUM:**
+   - **Without:** stack_size handles it, returns 0, no case matches
+   - **With:** Explicit early return, clearer intent
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** Explicit edge case handling, clearer code
+
+### Defensive Implementation Strategy
+
+**Layered Defense:**
+- sort_small validates pointers
+- stack_size has its own NULL check
+- Each sort_two/three/four/five has defensive checks
+- Defense-in-depth: multiple layers prevent failures
+
+**Return Behavior:**
+- Silent return on invalid input
+- Delegates to specialized functions for actual sorting
+- Trusts delegated functions' defensive implementations
 
 ---
 
 ## Complete Algorithm Pseudocode
 
+### Basic Implementation
 ```
 FUNCTION sort_small(stack_a, stack_b):
     // Step 1: Determine size
@@ -189,6 +261,41 @@ FUNCTION sort_small(stack_a, stack_b):
     ELSE:
         // Size is 0, 1, or >5
         RETURN  // Nothing to do or wrong function called
+
+    // Done! Stack is sorted
+END FUNCTION
+```
+
+### Defensive Implementation (Full)
+```
+FUNCTION sort_small(stack_a, stack_b):
+    // DEFENSIVE STEP 1: Validate stack pointers (CRITICAL)
+    IF stack_a is NULL:
+        RETURN  // Cannot proceed without valid stack A pointer
+
+    // DEFENSIVE STEP 2: Validate stack B pointer (MEDIUM)
+    IF stack_b is NULL:
+        RETURN  // sort_four/five need stack B
+
+    // DEFENSIVE STEP 3: Check for empty stack (MEDIUM)
+    IF *stack_a is NULL:
+        RETURN  // Empty stack, nothing to sort
+
+    // Step 4: Determine size
+    size = stack_size(*stack_a)  // stack_size has its own NULL check
+
+    // Step 5: Route to appropriate function
+    IF size == 2:
+        sort_two(stack_a)  // Has own defensive checks
+    ELSE IF size == 3:
+        sort_three(stack_a)  // Has own defensive checks
+    ELSE IF size == 4:
+        sort_four(stack_a, stack_b)  // Has own defensive checks
+    ELSE IF size == 5:
+        sort_five(stack_a, stack_b)  // Has own defensive checks
+    ELSE:
+        // Size is 0, 1, or >5
+        RETURN  // Edge cases: 0/1 already sorted, >5 is caller error
 
     // Done! Stack is sorted
 END FUNCTION
@@ -513,7 +620,28 @@ void	sort_small(t_stack **stack_a, t_stack **stack_b)
 
 ## Common Mistakes
 
-### Mistake 1: Not Checking Size
+### Mistake 1: Not Validating Pointers (CRITICAL)
+
+```c
+// ❌ WRONG - No defensive checks
+void sort_small(t_stack **a, t_stack **b)
+{
+    int size = stack_size(*a);  // CRASH if a is NULL!
+    // ...
+}
+```
+
+**✅ Correct:**
+```c
+if (!a || !b || !*a)
+    return;
+int size = stack_size(*a);  // Now safe
+```
+
+**Severity:** CRITICAL - causes SEGFAULT on NULL input
+**Defensive Priority:** Must be first checks in router function
+
+### Mistake 2: Not Checking Size (HIGH)
 
 ```c
 // ❌ WRONG - Assuming size without checking
@@ -530,7 +658,9 @@ if (size == 3)
     sort_three(a);  // Only call when appropriate
 ```
 
-### Mistake 2: Handling Wrong Sizes
+**Severity:** HIGH - calls wrong sorting function, produces incorrect results
+
+### Mistake 3: Handling Wrong Sizes (MEDIUM)
 
 ```c
 // ❌ WRONG - Trying to sort 6+ elements
@@ -548,7 +678,9 @@ else
     sort_large(a, b);
 ```
 
-### Mistake 3: Forgetting Stack B Parameter
+**Severity:** MEDIUM - wrong algorithm for input size, inefficient
+
+### Mistake 4: Forgetting Stack B Parameter (HIGH)
 
 ```c
 // ❌ WRONG - sort_four and sort_five need stack B!
@@ -568,7 +700,9 @@ void sort_small(t_stack **a, t_stack **b)
 }
 ```
 
-### Mistake 4: Doing Sorting Logic Itself
+**Severity:** HIGH - won't compile or crashes, sort_four/five need stack B
+
+### Mistake 5: Doing Sorting Logic Itself (MEDIUM)
 
 ```c
 // ❌ WRONG - Router should not contain sorting logic!
@@ -592,6 +726,8 @@ void sort_small(t_stack **a, t_stack **b)
         sort_two(a);  // Delegate, don't implement! ✅
 }
 ```
+
+**Severity:** MEDIUM - violates separation of concerns, harder to maintain
 
 ---
 
@@ -665,13 +801,46 @@ assert(sort_five_was_called);  // Verify routing
 
 ---
 
+## Defensive Programming Checklist
+
+### Implementation Verification
+- [ ] **NULL stack_a check** - `if (!stack_a) return;` is first line
+- [ ] **NULL stack_b check** - `if (!stack_b) return;` is second check
+- [ ] **Empty stack check** - `if (!*stack_a) return;` handles empty case
+- [ ] **stack_size call** - Properly calls stack_size after validation
+- [ ] **Size routing logic** - Correctly routes to size 2, 3, 4, 5
+- [ ] **Edge case handling** - Size 0, 1, and >5 don't crash
+- [ ] **Delegation only** - No sorting logic, only routing
+
+### Testing Checklist
+- [ ] **NULL double pointer** - `sort_small(NULL, &b)` doesn't crash
+- [ ] **NULL stack_b** - `sort_small(&a, NULL)` doesn't crash
+- [ ] **Empty stack** - `sort_small(&empty, &b)` doesn't crash
+- [ ] **Single element** - `sort_small(&one_element, &b)` returns safely
+- [ ] **Size 2** - Routes to sort_two correctly
+- [ ] **Size 3** - Routes to sort_three correctly
+- [ ] **Size 4** - Routes to sort_four correctly
+- [ ] **Size 5** - Routes to sort_five correctly
+- [ ] **Size > 5** - Returns without crash (caller error scenario)
+
+### Delegation Verification
+- [ ] **sort_two has defensive checks** - Verify sort_two validates input
+- [ ] **sort_three has defensive checks** - Verify sort_three validates input
+- [ ] **sort_four has defensive checks** - Verify sort_four validates input
+- [ ] **sort_five has defensive checks** - Verify sort_five validates input
+- [ ] **stack_size defensive** - Verify stack_size handles NULL
+- [ ] **Layered defense works** - Multiple validation layers prevent failures
+
+---
+
 ## Summary
 
 **What sort_small Does:**
-1. Determines the size of stack A
-2. Routes to the appropriate specialized sorting function
-3. Acts as a clean abstraction layer
-4. Handles sizes 2-5 only
+1. Validates input pointers (double pointers for both stacks)
+2. Determines the size of stack A
+3. Routes to the appropriate specialized sorting function
+4. Acts as a clean abstraction layer
+5. Handles sizes 2-5 only
 
 **Key Characteristics:**
 - ✅ Pure router function (no sorting logic)
@@ -680,6 +849,14 @@ assert(sort_five_was_called);  // Verify routing
 - ✅ Clean separation of concerns
 - ✅ Delegates to optimal implementations
 
+**Defensive features:**
+- ✅ NULL stack_a pointer validation (CRITICAL)
+- ✅ NULL stack_b pointer validation (MEDIUM)
+- ✅ Empty stack handling (MEDIUM)
+- ✅ Layered defense with delegated functions (LOW)
+- ✅ Silent failure on invalid input
+- ✅ Edge case handling (size 0, 1, >5)
+
 **Critical Uses:**
 - Main entry point for sorting 2-5 elements
 - Abstraction layer in main sorting logic
@@ -687,7 +864,8 @@ assert(sort_five_was_called);  // Verify routing
 - Ensures optimal algorithm for each size
 
 **Remember:**
-- Check size first
+- Always validate pointers first (CRITICAL)
+- Check size before routing
 - Route based on size (2, 3, 4, 5)
 - Delegate, don't implement sorting
 - Handle edge cases (0, 1 elements)

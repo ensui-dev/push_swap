@@ -6,7 +6,7 @@
 /*   By: mju-ferr <mju-ferr@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 00:00:00 by ensui             #+#    #+#             */
-/*   Updated: 2026/01/19 14:02:01 by mju-ferr         ###   ########.fr       */
+/*   Updated: 2026/01/20 22:46:46 by mju-ferr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,8 @@ void	free_split(char **split)
 
 void	free_stack(t_stack **stack)
 {
-	t_stack *current;
-	t_stack *temp;
+	t_stack	*current;
+	t_stack	*temp;
 
 	if (!stack || !*stack)
 		return ;

@@ -113,7 +113,7 @@ Operations: 1
 
 ## Step-by-Step Implementation
 
-### Step 1: Validate Input
+### Step 1: Validate Input (DEFENSIVE)
 
 **Safety check:**
 ```c
@@ -123,12 +123,14 @@ if (!stack_a || !*stack_a || !(*stack_a)->next)
 
 **What we're checking:**
 ```
-!stack_a: Double pointer is NULL → Can't proceed
-!*stack_a: Stack is empty → Can't sort nothing
-!(*stack_a)->next: Less than 2 elements → Can't sort 1 element
+!stack_a: Double pointer is NULL → Can't proceed (CRITICAL)
+!*stack_a: Stack is empty → Can't sort nothing (CRITICAL)
+!(*stack_a)->next: Less than 2 elements → Can't sort 1 element (HIGH)
 
 Any of these? Return immediately.
 ```
+
+**Defensive Priority:** CRITICAL - These checks must come first to prevent SEGFAULT
 
 ### Step 2: Compare First Two Elements
 
@@ -172,8 +174,50 @@ The 1 parameter means "print the operation" (sa).
 
 ---
 
+## Defensive Checks
+
+### Input Validation
+| Check | Priority | Failure Mode | Consequence |
+|-------|----------|--------------|-------------|
+| `!stack_a` | **CRITICAL** | NULL double pointer | SEGFAULT when dereferencing to `*stack_a` |
+| `!*stack_a` | **CRITICAL** | Empty stack | SEGFAULT when accessing `(*stack_a)->value` |
+| `!(*stack_a)->next` | **HIGH** | Single element | SEGFAULT when accessing `(*stack_a)->next->value` |
+
+### Why These Checks Matter
+
+1. **NULL double pointer check (`!stack_a`) - CRITICAL:**
+   - **Without:** Dereferencing `*stack_a` causes immediate SEGFAULT
+   - **With:** Returns safely without attempting to sort
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** Prevents catastrophic crash from NULL double pointer
+   - **Defensive Priority:** Must be first check
+
+2. **Empty stack check (`!*stack_a`) - CRITICAL:**
+   - **Without:** Accessing `(*stack_a)->value` crashes on empty stack
+   - **With:** Returns safely, treating empty as already sorted
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** Prevents crash when stack contains no nodes
+   - **Defensive Priority:** Second check, after stack pointer validation
+
+3. **Minimum elements check (`!(*stack_a)->next`) - HIGH:**
+   - **Without:** Accessing `(*stack_a)->next->value` crashes if only 1 element
+   - **With:** Returns early for insufficient elements
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** Ensures minimum 2 elements exist before comparison
+   - **Defensive Priority:** Third check, validates precondition
+
+### Defensive Implementation Strategy
+
+**Triple Guard:** Three checks needed (NULL double ptr, NULL stack, minimum 2 elements)
+**Return Behavior:** Silent return on invalid input (no error messages, no exceptions)
+**No Side Effects:** Read-only validation, safe to call anytime
+**Check Order is Critical:** Must check in order: pointer → dereferenced pointer → next pointer
+
+---
+
 ## Complete Algorithm Pseudocode
 
+### Basic Implementation
 ```
 FUNCTION sort_two(stack_a):
     // Step 1: Validate
@@ -184,6 +228,30 @@ FUNCTION sort_two(stack_a):
     IF first_element > second_element:
         // Step 3: Swap
         sa(stack_a, 1)  // Print "sa"
+
+    // Done! Stack is now sorted
+END FUNCTION
+```
+
+### Defensive Implementation (Full)
+```
+FUNCTION sort_two(stack_a):
+    // DEFENSIVE STEP 1: Validate double pointer (CRITICAL)
+    IF stack_a is NULL:
+        RETURN  // Cannot dereference NULL double pointer
+
+    // DEFENSIVE STEP 2: Validate dereferenced stack (CRITICAL)
+    IF *stack_a is NULL:
+        RETURN  // Empty stack, nothing to sort
+
+    // DEFENSIVE STEP 3: Validate minimum elements (HIGH)
+    IF (*stack_a)->next is NULL:
+        RETURN  // Only 1 element, cannot sort 2 elements
+
+    // Step 4: Compare first two elements
+    IF (*stack_a)->value > (*stack_a)->next->value:
+        // Step 5: Swap
+        sa(stack_a, 1)  // Print "sa" and swap top two
 
     // Done! Stack is now sorted
 END FUNCTION
@@ -499,7 +567,7 @@ void	sort_two(t_stack **stack_a)
 
 ## Common Mistakes
 
-### Mistake 1: Not Validating Input
+### Mistake 1: Not Validating Input (CRITICAL)
 
 ```c
 // ❌ WRONG
@@ -516,6 +584,10 @@ if (!stack_a || !*stack_a || !(*stack_a)->next)
     return;
 // Now safe to access
 ```
+
+**Severity:** CRITICAL - causes SEGFAULT on NULL input
+**Defensive Priority:** Must be first lines of function
+**Impact:** Without validation, any NULL input crashes the program
 
 ### Mistake 2: Wrong Comparison Direction
 
@@ -674,6 +746,35 @@ assert(is_sorted(stack_a) == 1);
 
 ---
 
+## Defensive Programming Checklist
+
+### Implementation Verification
+- [ ] **NULL double pointer check** - `if (!stack_a) return;` is first line
+- [ ] **NULL stack check** - `if (!*stack_a) return;` is second check
+- [ ] **Minimum elements check** - `if (!(*stack_a)->next) return;` is third check
+- [ ] **Check order is correct** - Must validate in order: stack_a → *stack_a → (*stack_a)->next
+- [ ] **Comparison operator** - Use `>` to detect out-of-order (not `<`)
+- [ ] **Correct operation** - Call `sa()` not ra/rb/other operations
+- [ ] **Print parameter** - Pass `1` to sa() to print the operation
+
+### Testing Checklist
+- [ ] **NULL double pointer** - `sort_two(NULL)` doesn't crash
+- [ ] **Empty stack** - `sort_two(&empty_stack)` doesn't crash (where empty_stack = NULL)
+- [ ] **Single element** - `sort_two(&stack_with_one)` doesn't crash
+- [ ] **Already sorted [1,2]** - Returns without operations (0 ops)
+- [ ] **Needs swap [2,1]** - Performs exactly 1 operation (sa)
+- [ ] **Negative numbers** - Correctly sorts [-1,-5] to [-5,-1]
+- [ ] **Mixed positive/negative** - Correctly sorts [3,-2] to [-2,3]
+- [ ] **Equal elements [5,5]** - Doesn't crash, no swap performed
+
+### Edge Case Handling
+- [ ] **All validation checks present** - Triple guard protects against all crash scenarios
+- [ ] **Silent failure on invalid input** - Returns without error messages
+- [ ] **Operation count optimal** - 0 ops if sorted, 1 op if unsorted
+- [ ] **No memory allocation** - Function uses O(1) space, no malloc failures possible
+
+---
+
 ## Summary
 
 **What sort_two Does:**
@@ -689,6 +790,14 @@ assert(is_sorted(stack_a) == 1);
 - ✅ Only uses sa (swap a)
 - ✅ Base case for small sorts
 
+**Defensive features:**
+- ✅ NULL double pointer validation (CRITICAL)
+- ✅ Empty stack validation (CRITICAL)
+- ✅ Minimum elements validation (HIGH)
+- ✅ Triple-guard check order
+- ✅ Silent failure on invalid input
+- ✅ No memory allocation (no malloc failure modes)
+
 **Critical Uses:**
 - Direct sorting of 2-element stacks
 - Called by sort_small router
@@ -696,7 +805,7 @@ assert(is_sorted(stack_a) == 1);
 - Handles edge case in larger sorts
 
 **Remember:**
-- Always validate input
+- Always validate input with triple guard
 - Use > comparison (not <)
 - Only swap when needed (not always)
 - Use sa operation

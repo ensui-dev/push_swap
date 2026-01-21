@@ -42,6 +42,37 @@ If duplicates exist, print "Error\n" and exit
 
 ---
 
+## Defensive Checks
+
+### Input Validation
+| Check | Priority | Failure Mode | Consequence |
+|-------|----------|--------------|-------------|
+| `!stack` | **CRITICAL** | NULL pointer | SEGFAULT when accessing `stack->next` |
+| `!stack->next` | **HIGH** | Single element | Unnecessary loop, wasted comparisons |
+
+### Why These Checks Matter
+
+1. **NULL pointer check (CRITICAL):**
+   - **Without:** `current = stack` followed by `current->next` crashes if stack is NULL
+   - **With:** Returns 0 safely, indicating no duplicates in empty stack
+   - **Cost:** O(1) - single comparison
+   - **Benefit:** Prevents crash, allows safe input validation flow
+   - **Semantic meaning:** Empty stack has no duplicates (logically correct)
+
+2. **Single element check (HIGH):**
+   - **Without:** Enters nested loop unnecessarily, then exits immediately
+   - **With:** Returns 0 immediately, skipping loop overhead
+   - **Cost:** O(1) - single comparison
+   - **Benefit:** Early exit optimization, clearer logic
+   - **Semantic meaning:** One element can't duplicate itself (logically correct)
+
+### Defensive Implementation Strategy
+**Double Guard:** Two checks needed (NULL validation + single element optimization)
+**Return Value:** 0 indicates no duplicates (safe to proceed with stack)
+**No Side Effects:** Read-only operation, safe to call anytime
+
+---
+
 ## Deep Dive: How It Works
 
 ### The Nested Loop Comparison
@@ -61,7 +92,7 @@ If any comparison finds equal values → duplicates exist
 
 ### Step-by-Step Process
 
-#### Step 1: Handle Edge Cases
+#### Step 1: Handle Edge Cases (DEFENSIVE)
 
 ```c
 if (!stack || !stack->next)
@@ -69,9 +100,10 @@ if (!stack || !stack->next)
 ```
 
 **Why no duplicates?**
-- Empty stack: No elements to duplicate
-- Single element: One value can't duplicate itself
-- Both cases: Return 0 (no duplicates)
+- **CRITICAL:** Empty stack (`!stack`) - No elements to duplicate, prevents SEGFAULT
+- **HIGH:** Single element (`!stack->next`) - One value can't duplicate itself
+- Both cases: Return 0 (no duplicates found)
+- **Defensive Priority:** Must be first check before any traversal
 
 #### Step 2: Outer Loop - Select Element to Compare
 
@@ -270,8 +302,9 @@ Early exit optimization!
 
 ---
 
-## Complete Algorithm Pseudocode
+## Implementation Pseudocode
 
+### Basic Implementation
 ```
 FUNCTION has_duplicates(stack):
     // Step 1: Handle edge cases
@@ -293,6 +326,39 @@ FUNCTION has_duplicates(stack):
         current = current.next
 
     // Step 3: No duplicates found
+    RETURN 0
+END FUNCTION
+```
+
+### Defensive Implementation (Full)
+```
+FUNCTION has_duplicates(stack):
+    // DEFENSIVE STEP 1: Validate input (CRITICAL)
+    IF stack is NULL:
+        RETURN 0  // Empty stack - no duplicates (prevents SEGFAULT)
+
+    // DEFENSIVE STEP 2: Optimize single element (HIGH)
+    IF stack.next is NULL:
+        RETURN 0  // One element can't duplicate itself
+
+    // Step 3: Initialize outer loop
+    current = stack
+
+    // Step 4: Nested loop comparison
+    WHILE current is not NULL:
+        // Inner loop: compare with all elements after current
+        compare = current.next
+
+        WHILE compare is not NULL:
+            // Check if values match
+            IF current.value == compare.value:
+                RETURN 1  // Duplicate found! Early exit
+
+            compare = compare.next
+
+        current = current.next
+
+    // Step 5: No duplicates found after all comparisons
     RETURN 0
 END FUNCTION
 ```
