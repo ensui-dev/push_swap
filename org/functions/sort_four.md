@@ -115,7 +115,28 @@ SORTED! ✅
 
 ## Step-by-Step Implementation
 
-### Step 1: Find Minimum Index
+### Step 1: Validate Input (DEFENSIVE)
+
+```c
+if (!stack_a || !stack_b || !*stack_a)
+    return;
+if (stack_size(*stack_a) < 4)
+    return;
+```
+
+**Defensive checks:**
+```
+!stack_a: Double pointer for stack A is NULL → Cannot dereference (CRITICAL)
+!stack_b: Double pointer for stack B is NULL → pb will crash (CRITICAL)
+!*stack_a: Stack A is empty → Nothing to sort (CRITICAL)
+size < 4: Not enough elements → Algorithm requires exactly 4 (MEDIUM)
+
+These checks prevent SEGFAULT and ensure algorithm preconditions are met.
+```
+
+**Defensive Priority:** CRITICAL - Must validate before any operation
+
+### Step 2: Find Minimum Index
 
 ```c
 int min_index = find_min_index(*stack_a);
@@ -210,6 +231,7 @@ Result: Fully sorted 4 elements!
 
 ## Complete Algorithm Pseudocode
 
+### Basic Implementation
 ```
 FUNCTION sort_four(stack_a, stack_b):
     // Step 1: Find minimum position
@@ -233,6 +255,51 @@ FUNCTION sort_four(stack_a, stack_b):
 
     // Step 5: Push minimum back to A
     pa(stack_a, stack_b)
+
+    // Done! Stack A is fully sorted
+END FUNCTION
+```
+
+### Defensive Implementation (Full)
+```
+FUNCTION sort_four(stack_a, stack_b):
+    // DEFENSIVE STEP 1: Validate stack A pointer (CRITICAL)
+    IF stack_a is NULL:
+        RETURN  // Cannot dereference NULL pointer
+
+    // DEFENSIVE STEP 2: Validate stack B pointer (CRITICAL)
+    IF stack_b is NULL:
+        RETURN  // pb operation needs valid stack B
+
+    // DEFENSIVE STEP 3: Validate dereferenced stack (CRITICAL)
+    IF *stack_a is NULL:
+        RETURN  // Empty stack, nothing to sort
+
+    // DEFENSIVE STEP 4: Validate size (MEDIUM)
+    IF stack_size(*stack_a) < 4:
+        RETURN  // Algorithm requires exactly 4 elements
+
+    // Step 5: Find minimum position
+    min_index = find_min_index(*stack_a)  // find_min_index has own NULL check
+
+    // Step 6: Bring minimum to top (choose shortest path)
+    IF min_index == 1:
+        sa(stack_a, 1)         // Swap to top
+    ELSE IF min_index == 2:
+        rra(stack_a, 1)        // Reverse rotate twice
+        rra(stack_a, 1)
+    ELSE IF min_index == 3:
+        rra(stack_a, 1)        // Reverse rotate once
+    // If min_index == 0, already on top
+
+    // Step 7: Push minimum to B
+    pb(stack_a, stack_b, 1)  // pb has own defensive checks
+
+    // Step 8: Sort remaining 3 in A
+    sort_three(stack_a)  // sort_three has own defensive checks
+
+    // Step 9: Push minimum back to A
+    pa(stack_a, stack_b, 1)  // pa has own defensive checks
 
     // Done! Stack A is fully sorted
 END FUNCTION
@@ -339,6 +406,60 @@ A: [1, 2, 3, 4]  B: [] ✅
 Operations: sa, pb, sort_three ops, pa
 Total: ~4-5 operations
 ```
+
+---
+
+## Defensive Checks
+
+### Input Validation
+| Check | Priority | Failure Mode | Consequence |
+|-------|----------|--------------|-------------|
+| `!stack_a` | **CRITICAL** | NULL double pointer for stack A | SEGFAULT when dereferencing `*stack_a` |
+| `!stack_b` | **CRITICAL** | NULL double pointer for stack B | SEGFAULT when calling `pb()` |
+| `!*stack_a` | **CRITICAL** | Empty stack | SEGFAULT when accessing elements |
+| `stack_size(*stack_a) < 4` | **MEDIUM** | Insufficient elements | Invalid sorting logic |
+
+### Why These Checks Matter
+
+1. **NULL stack_a check (`!stack_a`) - CRITICAL:**
+   - **Without:** Dereferencing `*stack_a` will crash immediately
+   - **With:** Returns safely before attempting any operation
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** Prevents crash, essential for function safety
+
+2. **NULL stack_b check (`!stack_b`) - CRITICAL:**
+   - **Without:** `pb()` operation will crash when accessing stack B
+   - **With:** Returns safely, prevents crash during push operation
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** sort_four REQUIRES stack B for its reduction strategy
+
+3. **Empty stack check (`!*stack_a`) - CRITICAL:**
+   - **Without:** `find_min_index()` will crash or return invalid index
+   - **With:** Returns safely, treating empty stack as edge case
+   - **Cost:** O(1) - single pointer comparison
+   - **Benefit:** Prevents crash on empty input
+
+4. **Size validation (`stack_size < 4`) - MEDIUM:**
+   - **Without:** Algorithm assumes 4 elements, will malfunction with fewer
+   - **With:** Returns early for invalid sizes
+   - **Cost:** O(n) where n ≤ 4, so effectively O(1)
+   - **Benefit:** Ensures algorithm preconditions are met
+
+### Defensive Implementation Strategy
+
+**Guard Order:**
+```
+1. CRITICAL: Check if stack_a pointer is NULL
+2. CRITICAL: Check if stack_b pointer is NULL
+3. CRITICAL: Check if dereferenced stack_a is NULL
+4. MEDIUM: Validate stack has at least 4 elements
+5. PROCEED: Execute sorting algorithm
+```
+
+**Return Behavior:**
+- Returns `void` - no error codes
+- Silent failure on invalid input (no sorting performed)
+- Relies on defensive operations (pb, pa, sort_three) for additional safety
 
 ---
 
@@ -522,7 +643,7 @@ sort_four(&stack_a, &stack_b);
 
 ## 42 Norm Considerations
 
-### Function Structure
+### Function Structure (Basic)
 
 ```c
 void	sort_four(t_stack **stack_a, t_stack **stack_b)
@@ -545,19 +666,70 @@ void	sort_four(t_stack **stack_a, t_stack **stack_b)
 }
 ```
 
+### Function Structure (Defensive - Recommended)
+
+```c
+void	sort_four(t_stack **stack_a, t_stack **stack_b)
+{
+	int	min_index;
+
+	if (!stack_a || !stack_b || !*stack_a)
+		return ;
+	if (stack_size(*stack_a) < 4)
+		return ;
+	min_index = find_min_index(*stack_a);
+	if (min_index == 1)
+		sa(stack_a, 1);
+	else if (min_index == 2)
+	{
+		rra(stack_a, 1);
+		rra(stack_a, 1);
+	}
+	else if (min_index == 3)
+		rra(stack_a, 1);
+	pb(stack_a, stack_b, 1);
+	sort_three(stack_a);
+	pa(stack_a, stack_b, 1);
+}
+```
+
 **Norm compliance:**
-- ✅ Under 25 lines
+- ✅ Under 25 lines (22 lines with defensive checks)
 - ✅ Single responsibility: sorts 4 elements
 - ✅ Only 1 variable (min_index)
 - ✅ No line over 80 characters
 - ✅ Tabs for indentation
 - ✅ Clear reduction strategy
+- ✅ Defensive checks add only 4 lines
 
 ---
 
 ## Common Mistakes
 
-### Mistake 1: Not Using Optimal Rotation
+### Mistake 1: Not Validating Input (CRITICAL)
+
+```c
+// ❌ WRONG - No defensive checks
+void sort_four(t_stack **stack_a, t_stack **stack_b)
+{
+    int min_index = find_min_index(*stack_a);  // CRASH if stack_a is NULL!
+    // ...
+}
+```
+
+**✅ Correct:**
+```c
+if (!stack_a || !stack_b || !*stack_a)
+    return;
+if (stack_size(*stack_a) < 4)
+    return;
+// Now safe to proceed
+```
+
+**Severity:** CRITICAL - causes SEGFAULT on NULL input
+**Defensive Priority:** Must be first checks before any dereference
+
+### Mistake 2: Not Using Optimal Rotation (MEDIUM)
 
 ```c
 // ❌ WRONG - Always using ra
@@ -575,7 +747,10 @@ if (min_index == 3)
     rra(stack_a, 1);  // 1 operation! Much better
 ```
 
-### Mistake 2: Forgetting to Push Back
+**Severity:** MEDIUM - works but inefficient
+**Impact:** Uses more operations than necessary
+
+### Mistake 3: Forgetting to Push Back (HIGH)
 
 ```c
 // ❌ WRONG
@@ -592,7 +767,10 @@ sort_three(stack_a);
 pa(stack_a, stack_b, 1);  // CRITICAL! Restore minimum
 ```
 
-### Mistake 3: Not Handling All Positions
+**Severity:** HIGH - produces incorrect result
+**Impact:** Minimum element left in stack B, sort incomplete
+
+### Mistake 4: Not Handling All Positions (HIGH)
 
 ```c
 // ❌ WRONG - Missing position 2
@@ -608,7 +786,10 @@ else if (min_index == 3)
 // Handle all positions: 0, 1, 2, 3
 ```
 
-### Mistake 4: Sorting Before Isolating Min
+**Severity:** HIGH - some inputs fail to sort correctly
+**Impact:** Minimum not moved to top for position 2
+
+### Mistake 5: Sorting Before Isolating Min (HIGH)
 
 ```c
 // ❌ WRONG - Strategy doesn't work
@@ -623,6 +804,9 @@ pb(stack_a, stack_b, 1);
 // THEN sort remaining 3
 sort_three(stack_a);
 ```
+
+**Severity:** HIGH - incorrect algorithm
+**Impact:** sort_three expects exactly 3 elements
 
 ---
 
@@ -687,13 +871,47 @@ assert_result([-10,-3,0,5]);
 
 ---
 
+## Defensive Programming Checklist
+
+### Implementation Verification
+- [ ] **NULL stack_a check** - `if (!stack_a) return;` is first line
+- [ ] **NULL stack_b check** - `if (!stack_b) return;` is in validation
+- [ ] **Empty stack check** - `if (!*stack_a) return;` handles empty case
+- [ ] **Size validation** - `if (stack_size(*stack_a) < 4) return;`
+- [ ] **find_min_index call** - Properly calls after validation
+- [ ] **All positions handled** - Cases for 0, 1, 2, 3
+- [ ] **pb executed** - Pushes minimum to B
+- [ ] **sort_three called** - Sorts remaining 3
+- [ ] **pa executed** - Restores minimum to A
+
+### Testing Checklist
+- [ ] **NULL stack_a** - `sort_four(NULL, &b)` doesn't crash
+- [ ] **NULL stack_b** - `sort_four(&a, NULL)` doesn't crash
+- [ ] **Empty stack** - `sort_four(&empty, &b)` doesn't crash
+- [ ] **Size < 4** - `sort_four(&three_elements, &b)` returns safely
+- [ ] **Min at pos 0** - `[1,4,3,2]` sorts correctly
+- [ ] **Min at pos 1** - `[4,1,3,2]` sorts correctly
+- [ ] **Min at pos 2** - `[4,3,1,2]` sorts correctly
+- [ ] **Min at pos 3** - `[4,3,2,1]` sorts correctly
+- [ ] **Stack B empty after** - B has no elements after sort
+
+### Defensive Dependencies
+- [ ] **find_min_index has defensive checks** - Verify handles NULL
+- [ ] **sort_three has defensive checks** - Verify validates input
+- [ ] **pb has defensive checks** - Verify handles NULL stacks
+- [ ] **pa has defensive checks** - Verify handles empty source
+- [ ] **Layered defense works** - Multiple validation layers prevent failures
+
+---
+
 ## Summary
 
 **What sort_four Does:**
-1. Finds and isolates minimum element (push to B)
-2. Sorts remaining 3 elements using sort_three
-3. Restores minimum to top of sorted stack
-4. Uses 5-6 operations on average
+1. Validates input pointers and size
+2. Finds and isolates minimum element (push to B)
+3. Sorts remaining 3 elements using sort_three
+4. Restores minimum to top of sorted stack
+5. Uses 5-6 operations on average
 
 **Key Characteristics:**
 - ✅ Reduction strategy (4 → 3 problem)
@@ -702,6 +920,14 @@ assert_result([-10,-3,0,5]);
 - ✅ Maximum ~6-7 operations
 - ✅ Optimal path selection for rotations
 
+**Defensive features:**
+- ✅ NULL stack_a pointer validation (CRITICAL)
+- ✅ NULL stack_b pointer validation (CRITICAL)
+- ✅ Empty stack validation (CRITICAL)
+- ✅ Size validation (MEDIUM)
+- ✅ Layered defense with delegated functions
+- ✅ Silent failure on invalid input
+
 **Critical Uses:**
 - Direct sorting of 4-element stacks
 - Called by sort_small router
@@ -709,7 +935,8 @@ assert_result([-10,-3,0,5]);
 - Building block for understanding sort_five
 
 **Remember:**
-- Find minimum position first
+- Always validate pointers first (CRITICAL)
+- Find minimum position after validation
 - Choose shortest rotation path
 - Isolate minimum in stack B
 - Sort remaining 3 with sort_three

@@ -118,7 +118,27 @@ Then use one more comparison to determine exact case.
 
 ## Step-by-Step Implementation
 
-### Step 1: Find the Maximum Value
+### Step 1: Validate Input (DEFENSIVE)
+
+```c
+if (!stack_a || !*stack_a)
+    return;
+if (stack_size(*stack_a) < 3)
+    return;
+```
+
+**Defensive checks:**
+```
+!stack_a: Double pointer is NULL → Cannot dereference (CRITICAL)
+!*stack_a: Stack is empty → Nothing to sort (CRITICAL)
+size < 3: Not enough elements → Algorithm requires exactly 3 (MEDIUM)
+
+These checks prevent SEGFAULT and ensure algorithm preconditions are met.
+```
+
+**Defensive Priority:** CRITICAL - Must validate before any dereference or operation
+
+### Step 2: Find the Maximum Value
 
 ```c
 int max = find_max(*stack_a);
@@ -129,9 +149,11 @@ int max = find_max(*stack_a);
 The maximum element's position helps identify the permutation.
 Alternatively, could use minimum.
 Both work, but max is conventional in many implementations.
+
+Note: find_max has its own NULL check, but we validate first for clarity.
 ```
 
-### Step 2: Identify Position and Execute
+### Step 3: Identify Position and Execute
 
 **Decision tree based on max position:**
 
@@ -168,9 +190,10 @@ else
 
 ## Complete Algorithm Pseudocode
 
+### Basic Implementation
 ```
 FUNCTION sort_three(stack_a):
-    // Validate
+    // Validate size only
     IF stack has less than 3 elements:
         RETURN
 
@@ -195,6 +218,47 @@ FUNCTION sort_three(stack_a):
         IF top > second:  // Out of order?
             sa(stack_a)   // Just swap
         // Else already sorted
+
+    // Done! Stack is now sorted
+END FUNCTION
+```
+
+### Defensive Implementation (Full)
+```
+FUNCTION sort_three(stack_a):
+    // DEFENSIVE STEP 1: Validate double pointer (CRITICAL)
+    IF stack_a is NULL:
+        RETURN  // Cannot dereference NULL pointer
+
+    // DEFENSIVE STEP 2: Validate dereferenced stack (CRITICAL)
+    IF *stack_a is NULL:
+        RETURN  // Empty stack, nothing to sort
+
+    // DEFENSIVE STEP 3: Validate size (MEDIUM)
+    IF stack_size(*stack_a) < 3:
+        RETURN  // Algorithm requires exactly 3 elements
+
+    // Step 4: Find maximum value
+    max = find_max(*stack_a)  // find_max has own NULL check (layered defense)
+
+    // Step 5: Decision tree based on max position
+    IF (*stack_a)->value == max:
+        // Max on top: Cases 5, 6
+        ra(stack_a, 1)  // Move max down (ra has own checks)
+        IF (*stack_a)->value > (*stack_a)->next->value:
+            sa(stack_a, 1)  // Swap if still out of order
+
+    ELSE IF (*stack_a)->next->value == max:
+        // Max in middle: Cases 2, 4
+        rra(stack_a, 1)  // Move max to bottom (rra has own checks)
+        IF (*stack_a)->value > (*stack_a)->next->value:
+            sa(stack_a, 1)  // Swap if still out of order
+
+    ELSE:
+        // Max on bottom: Cases 1, 3
+        IF (*stack_a)->value > (*stack_a)->next->value:
+            sa(stack_a, 1)  // Just swap if out of order
+        // Else already sorted (Case 1)
 
     // Done! Stack is now sorted
 END FUNCTION
@@ -675,7 +739,7 @@ sort_three([3,2,1]); // Output: ra, sa     2 ops
 
 ## 42 Norm Considerations
 
-### Function Structure
+### Function Structure (Basic)
 
 ```c
 void	sort_three(t_stack **stack_a)
@@ -702,13 +766,43 @@ void	sort_three(t_stack **stack_a)
 }
 ```
 
+### Function Structure (Defensive - Recommended)
+
+```c
+void	sort_three(t_stack **stack_a)
+{
+	int	max;
+
+	if (!stack_a || !*stack_a)
+		return ;
+	if (stack_size(*stack_a) < 3)
+		return ;
+	max = find_max(*stack_a);
+	if ((*stack_a)->value == max)
+	{
+		ra(stack_a, 1);
+		if ((*stack_a)->value > (*stack_a)->next->value)
+			sa(stack_a, 1);
+	}
+	else if ((*stack_a)->next->value == max)
+	{
+		rra(stack_a, 1);
+		if ((*stack_a)->value > (*stack_a)->next->value)
+			sa(stack_a, 1);
+	}
+	else if ((*stack_a)->value > (*stack_a)->next->value)
+		sa(stack_a, 1);
+}
+```
+
 **Norm compliance:**
-- ✅ Under 25 lines
+- ✅ Under 25 lines (24 lines with defensive checks)
 - ✅ Single responsibility: sorts 3 elements
 - ✅ Only 1 variable (max)
 - ✅ No line over 80 characters
 - ✅ Tabs for indentation
 - ✅ Handles all cases optimally
+- ✅ Defensive checks add only 2 lines
 
 ---
 
