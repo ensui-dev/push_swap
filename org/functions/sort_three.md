@@ -1067,9 +1067,9 @@ This is the best possible algorithm! ✅
 
 ## Location in Project
 
-**File:** `srcs/sort_small.c`
+**File:** `srcs/sort_small_utils.c`
 **Header:** `includes/push_swap.h`
-**Phase in TODO:** Phase 2.2 (Small Sorting Algorithms)
+**Phase in TODO:** Phase 6 (Small Sorting Algorithms)
 
 ---
 

@@ -901,9 +901,30 @@ No generic algorithm can beat these! ✅
 
 ## Location in Project
 
-**File:** `srcs/sort_small.c`
+**File:** `srcs/sort_small.c` (router function only)
+**Helper Functions File:** `srcs/sort_small_utils.c` (sort_two, sort_three, sort_four, sort_five, rotate_min_to_top)
 **Header:** `includes/push_swap.h`
-**Phase in TODO:** Phase 2.2 (Small Sorting Algorithms)
+**Phase in TODO:** Phase 6 (Small Sorting Algorithms)
+
+### File Structure
+```
+srcs/
+├── sort_small.c           # Router function only (~15 lines)
+│   └── sort_small()       # Routes to appropriate sort function
+│
+└── sort_small_utils.c     # All helper sorting functions
+    ├── sort_two()         # 2-element sort
+    ├── sort_three()       # 3-element sort
+    ├── sort_four()        # 4-element sort
+    ├── rotate_min_to_top() # Static helper for sort_five
+    └── sort_five()        # 5-element sort
+```
+
+**Why this structure:**
+- 42 Norm: Maximum 5 functions per file
+- sort_small.c: 1 function (router)
+- sort_small_utils.c: 5 functions (sort_two, sort_three, sort_four, rotate_min_to_top, sort_five)
+- Clean separation: routing logic vs. sorting implementations
 
 ---
 

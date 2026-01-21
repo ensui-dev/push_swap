@@ -1,13 +1,13 @@
 # Push_swap Function Documentation - Status Report
 
-**Last Updated**: 2026-01-15
-**Total Functions Documented**: 55 out of 55 (100% COMPLETE) 🎉
-**Core Functions**: 51 | **Static Helpers**: 4
-**Total Documentation Size**: ~750 KB
+**Last Updated**: 2026-01-21
+**Total Functions Documented**: 56 out of 56 (100% COMPLETE) 🎉
+**Core Functions**: 51 | **Static Helpers**: 5
+**Total Documentation Size**: ~780 KB
 
 ---
 
-## 🎉 COMPLETE DOCUMENTATION - ALL 55 FUNCTIONS 🎉
+## 🎉 COMPLETE DOCUMENTATION - ALL 56 FUNCTIONS 🎉
 
 ### Phase 1: Stack Utility Functions (11/11) ✅ COMPLETE
 1. ✅ **[stack_new.md](functions/stack_new.md)** (13 KB)
@@ -165,27 +165,29 @@
     - Helper for index normalization
     - Comparison with other sorting methods
 
-### Phase 6: Small Number Sorting (5/5) ✅ COMPLETE
+### Phase 6: Small Number Sorting (5/5 + 1 helper) ✅ COMPLETE
 
 37. ✅ **[sort_two.md](functions/sort_two.md)** (~13 KB)
     - Sorts exactly 2 elements
     - Maximum 1 operation
     - Simplest sorting function
 
-19. ✅ **[sort_three.md](functions/sort_three.md)** (~15 KB)
+38. ✅ **[sort_three.md](functions/sort_three.md)** (~15 KB)
     - Hardcoded optimal solutions for 6 cases
     - Maximum 2 operations
     - Building block for larger sorts
 
-20. ✅ **[sort_four.md](functions/sort_four.md)** (~14 KB)
+39. ✅ **[sort_four.md](functions/sort_four.md)** (~14 KB)
     - Reduction to 3 elements
     - Isolates minimum to stack B
     - Maximum ~6-7 operations
 
-21. ✅ **[sort_five.md](functions/sort_five.md)** (~15 KB)
+40. ✅ **[sort_five.md](functions/sort_five.md)** (~15 KB)
     - Double reduction to 3 elements
     - Isolates two smallest elements
     - Maximum ~11-12 operations
+    - Uses static helper (documented separately):
+      - **[rotate_min_to_top.md](functions/rotate_min_to_top.md)** (~28 KB) - Rotate minimum to top
 
 41. ✅ **[sort_small.md](functions/sort_small.md)** (~15 KB)
     - Router function for sizes 2-5
@@ -320,9 +322,10 @@
 - ✅ sort_three
 - ✅ sort_four
 - ✅ sort_five
+  - ✅ rotate_min_to_top (static helper - dedicated doc)
 - ✅ sort_small
 
-**Progress: 5/5 (100%)** ✅
+**Progress: 5/5 core + 1/1 helper (100%)** ✅
 
 ### Phase 7: Large Sorting Algorithm ✅ COMPLETE
 - ✅ push_chunks_to_b
@@ -349,11 +352,11 @@
 | Metric | Value |
 |--------|-------|
 | **Core Functions** | 51 functions |
-| **Static Helpers** | 4 (count_total_numbers, join_all_arguments, append_node, build_stack) |
-| **Total Documented** | 55 functions (100%) 🎉 |
+| **Static Helpers** | 5 (count_total_numbers, join_all_arguments, append_node, build_stack, rotate_min_to_top) |
+| **Total Documented** | 56 functions (100%) 🎉 |
 | **Completion** | 100% COMPLETE |
-| **Total Doc Size** | ~750 KB |
-| **Avg Doc Size** | ~13.6 KB/function |
+| **Total Doc Size** | ~780 KB |
+| **Avg Doc Size** | ~13.9 KB/function |
 | **Phases Complete** | 8/8 (All phases) |
 | **Helper Docs** | Full documentation for static helpers |
 
@@ -361,7 +364,7 @@
 
 ## 🎉 100% COMPLETE - YOU CAN BUILD EVERYTHING! 🎉
 
-### ALL 8 Phases Fully Documented (55 functions):
+### ALL 8 Phases Fully Documented (56 functions):
 
 #### ✅ Phase 1: Stack Utilities (11/11) - COMPLETE
 - All basic operations, find functions, positioning, validation
@@ -384,8 +387,9 @@
 #### ✅ Phase 5: Index Normalization (4/4) - COMPLETE
 - assign_index, get_index_position, copy_values_to_array, sort_int_array
 
-#### ✅ Phase 6: Small Sorting (5/5) - COMPLETE
+#### ✅ Phase 6: Small Sorting (5/5 + 1 helper) - COMPLETE
 - sort_two, sort_three, sort_four, sort_five, sort_small
+- rotate_min_to_top (static helper - full doc) - NEW
 
 #### ✅ Phase 7: Large Sorting (8/8) - COMPLETE
 - Complete Turk algorithm with chunking and cost optimization
@@ -395,7 +399,7 @@
 
 ### What You Can Build RIGHT NOW:
 
-With ALL 55 functions documented (51 core + 4 helpers), you can:
+With ALL 56 functions documented (51 core + 5 helpers), you can:
 1. ✅ **Build the COMPLETE push_swap program**
 2. ✅ **Parse and validate ALL input formats**
 3. ✅ **Sort 2-5 elements OPTIMALLY**
@@ -412,11 +416,13 @@ With ALL 55 functions documented (51 core + 4 helpers), you can:
 - ✨ Static helper functions with FULL separate documentation
 - ✨ Two-pass parsing strategy (count → allocate → fill)
 - ✨ Refactored init_stack_a with append_node + build_stack helpers
+- ✨ Refactored sort_five with rotate_min_to_top helper (42 Norm compliant)
 - ✨ Complete Turk algorithm with optimization
 - ✨ Index normalization for large numbers
 - ✨ Error handling and memory management
 - ✨ String ownership transfer patterns
 - ✨ 42 Norm compliance throughout (all functions under 25 lines)
+- ✨ Defensive programming approach documented for sort_small.c functions
 
 ---
 

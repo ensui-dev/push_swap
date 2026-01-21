@@ -103,13 +103,30 @@
 
 ## Phase 6: Small Number Sorting ✅ COMPLETE
 
+### File Structure
+```
+srcs/
+├── sort_small.c           # Router function only (~15 lines)
+│   └── sort_small()       # Routes to appropriate sort function
+│
+└── sort_small_utils.c     # All helper sorting functions (5 functions)
+    ├── sort_two()         # 2-element sort
+    ├── sort_three()       # 3-element sort
+    ├── sort_four()        # 4-element sort
+    ├── rotate_min_to_top() # Static helper for sort_five
+    └── sort_five()        # 5-element sort
+```
+
 ### Hardcoded Solutions (Phase 6.1-6.4) ✅ COMPLETE
+**File:** `srcs/sort_small_utils.c` (5 functions - 42 Norm compliant)
 - ✅ [sort_two](functions/sort_two.md) - Sort 2 elements (optimal)
 - ✅ [sort_three](functions/sort_three.md) - Sort 3 elements (optimal)
 - ✅ [sort_four](functions/sort_four.md) - Sort 4 elements
 - ✅ [sort_five](functions/sort_five.md) - Sort 5 elements
+  - ✅ [rotate_min_to_top](functions/rotate_min_to_top.md) - Static helper: Rotate minimum to top position
 
 ### Router (Phase 6.5) ✅ COMPLETE
+**File:** `srcs/sort_small.c` (1 function - router only)
 - ✅ [sort_small](functions/sort_small.md) - Route to appropriate small sort function
 
 ---
@@ -164,8 +181,8 @@
 ## Total Functions
 
 - **Core Functions:** 51 (100%) 🎉
-- **Static Helpers:** 4 (100%) 🎉
-- **Total Documented:** 55
+- **Static Helpers:** 5 (100%) 🎉
+- **Total Documented:** 56
 - **Pending:** 0
 - **Status:** ALL PUSH_SWAP FUNCTIONS COMPLETE
 
@@ -176,11 +193,11 @@
 - ✅ **Phase 3: Error & Memory (4/4) - COMPLETE**
 - ✅ **Phase 4: Stack Operations (11/11) - COMPLETE**
 - ✅ **Phase 5: Index Normalization (4/4) - COMPLETE**
-- ✅ **Phase 6: Small Sorting (5/5) - COMPLETE**
+- ✅ **Phase 6: Small Sorting (5/5 + 1 helper) - COMPLETE**
 - ✅ **Phase 7: Large Sorting (8/8) - COMPLETE**
 - ✅ **Phase 8: Main Program (2/2) - COMPLETE**
 
-### 🎉 100% DOCUMENTATION COMPLETE (55 FILES) 🎉
+### 🎉 100% DOCUMENTATION COMPLETE (56 FILES) 🎉
 
 ---
 
@@ -212,13 +229,13 @@ Each function documentation includes:
 - ✅ Phase 3: Error & Memory (4/4)
 - ✅ Phase 4: Stack Operations (11/11)
 - ✅ Phase 5: Index Normalization (4/4)
-- ✅ Phase 6: Small Sorting (5/5)
+- ✅ Phase 6: Small Sorting (5/5 + 1 static helper)
 - ✅ Phase 7: Large Sorting (8/8) - Complete Turk algorithm
 - ✅ Phase 8: Main Program (2/2)
 
 ### What You Have:
-✅ **55 comprehensive documentation files** totaling ~750KB
-✅ **51 core functions** + **4 static helper functions**
+✅ **56 comprehensive documentation files** totaling ~780KB
+✅ **51 core functions** + **5 static helper functions**
 ✅ **Complete implementation guide** for entire push_swap project
 ✅ **All algorithms documented**: Small sorts (2-5) and Turk algorithm (large)
 ✅ **Full parsing & validation** system with error handling
@@ -235,6 +252,9 @@ Each function documentation includes:
 **Stack Init Helpers (srcs/stack_init.c):**
 - ✅ [append_node](functions/append_node.md) - Validate, convert, and add single node to stack (~20 KB)
 - ✅ [build_stack](functions/build_stack.md) - Build complete stack from numbers array (~22 KB)
+
+**Small Sort Helpers (srcs/sort_small_utils.c):**
+- ✅ [rotate_min_to_top](functions/rotate_min_to_top.md) - Rotate minimum element to top of stack (~28 KB)
 
 All static helpers documented with:
 - Full implementation details and pseudocode

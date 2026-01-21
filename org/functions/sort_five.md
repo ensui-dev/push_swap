@@ -248,46 +248,39 @@ This automatically places them in correct order!
 
 ## Complete Algorithm Pseudocode
 
-### Basic Implementation
+### Basic Implementation (With Helper Function)
 ```
+// Static helper function - rotates minimum to top
+FUNCTION rotate_min_to_top(stack_a, size):
+    min_idx = find_min_index(stack_a)
+
+    IF min_idx == 1:
+        sa(stack_a)
+    ELSE IF min_idx == 2 AND size == 5:
+        ra(stack_a)
+        ra(stack_a)
+    ELSE IF (min_idx == 3 AND size == 5) OR (min_idx == 2 AND size == 4):
+        rra(stack_a)
+        rra(stack_a)
+    ELSE IF (min_idx == 4 AND size == 5) OR (min_idx == 3 AND size == 4):
+        rra(stack_a)
+    // Position 0: Already on top, no action needed
+END FUNCTION
+
+// Main sort_five function
 FUNCTION sort_five(stack_a, stack_b):
-    // Phase 1: Find and push minimum
-    min_index = find_min_index(stack_a)
-
-    // Bring min to top (shortest path)
-    IF min_index == 1:
-        sa(stack_a)
-    ELSE IF min_index == 2:
-        ra(stack_a)
-        ra(stack_a)
-    ELSE IF min_index == 3:
-        rra(stack_a)
-        rra(stack_a)
-    ELSE IF min_index == 4:
-        rra(stack_a)
-
-    // Push min to B
+    // Phase 1: Rotate first minimum to top and push to B
+    rotate_min_to_top(stack_a, 5)
     pb(stack_a, stack_b)
 
-    // Phase 2: Find and push second minimum
-    min_index = find_min_index(stack_a)  // Find min in remaining 4
-
-    // Bring to top (shortest path for 4 elements)
-    IF min_index == 1:
-        sa(stack_a)
-    ELSE IF min_index == 2:
-        rra(stack_a)
-        rra(stack_a)
-    ELSE IF min_index == 3:
-        rra(stack_a)
-
-    // Push second-min to B
+    // Phase 2: Rotate second minimum to top and push to B
+    rotate_min_to_top(stack_a, 4)
     pb(stack_a, stack_b)
 
-    // Phase 3: Sort remaining 3
+    // Phase 3: Sort remaining 3 elements
     sort_three(stack_a)
 
-    // Phase 4: Push both back
+    // Phase 4: Push both back to A
     pa(stack_a, stack_b)  // Push second-min
     pa(stack_a, stack_b)  // Push min
 
@@ -295,8 +288,29 @@ FUNCTION sort_five(stack_a, stack_b):
 END FUNCTION
 ```
 
-### Defensive Implementation (Full)
+### Defensive Implementation (With Helper Function)
 ```
+// Static helper function - trusts caller validation (layered defense)
+FUNCTION rotate_min_to_top(stack_a, size):
+    // No defensive checks here - sort_five validates before calling
+    // find_min_index has its own NULL check (backup layer)
+
+    min_idx = find_min_index(*stack_a)
+
+    IF min_idx == 1:
+        sa(stack_a, 1)  // sa has own defensive checks
+    ELSE IF min_idx == 2 AND size == 5:
+        ra(stack_a, 1)  // ra has own defensive checks
+        ra(stack_a, 1)
+    ELSE IF (min_idx == 3 AND size == 5) OR (min_idx == 2 AND size == 4):
+        rra(stack_a, 1)  // rra has own defensive checks
+        rra(stack_a, 1)
+    ELSE IF (min_idx == 4 AND size == 5) OR (min_idx == 3 AND size == 4):
+        rra(stack_a, 1)
+    // Position 0: Already on top, no action needed
+END FUNCTION
+
+// Main sort_five function with full defensive checks
 FUNCTION sort_five(stack_a, stack_b):
     // DEFENSIVE STEP 1: Validate stack A pointer (CRITICAL)
     IF stack_a is NULL:
@@ -314,43 +328,18 @@ FUNCTION sort_five(stack_a, stack_b):
     IF stack_size(*stack_a) < 5:
         RETURN  // Algorithm requires exactly 5 elements
 
-    // Phase 1: Find and push minimum (to 5-element stack)
-    min_index = find_min_index(*stack_a)  // find_min_index has own NULL check
+    // Phase 1: Rotate first minimum to top and push to B
+    rotate_min_to_top(stack_a, 5)  // Helper trusts our validation
+    pb(stack_a, stack_b, 1)        // pb has own defensive checks
 
-    // Bring min to top (shortest path for 5 elements)
-    IF min_index == 1:
-        sa(stack_a, 1)
-    ELSE IF min_index == 2:
-        ra(stack_a, 1)
-        ra(stack_a, 1)
-    ELSE IF min_index == 3:
-        rra(stack_a, 1)
-        rra(stack_a, 1)
-    ELSE IF min_index == 4:
-        rra(stack_a, 1)
-
-    // Push min to B
-    pb(stack_a, stack_b, 1)  // pb has own defensive checks
-
-    // Phase 2: Find and push second minimum (to 4-element stack)
-    min_index = find_min_index(*stack_a)  // Find min in remaining 4
-
-    // Bring to top (shortest path for 4 elements)
-    IF min_index == 1:
-        sa(stack_a, 1)
-    ELSE IF min_index == 2:
-        rra(stack_a, 1)
-        rra(stack_a, 1)
-    ELSE IF min_index == 3:
-        rra(stack_a, 1)
-
-    // Push second-min to B
+    // Phase 2: Rotate second minimum to top and push to B
+    rotate_min_to_top(stack_a, 4)  // Now 4 elements in A
     pb(stack_a, stack_b, 1)
 
-    // Phase 3: Sort remaining 3
+    // Phase 3: Sort remaining 3 elements
     sort_three(stack_a)  // sort_three has own defensive checks
 
-    // Phase 4: Push both back
+    // Phase 4: Push both back to A
     pa(stack_a, stack_b, 1)  // Push second-min (pa has own checks)
     pa(stack_a, stack_b, 1)  // Push min
 
@@ -660,53 +649,81 @@ else
 
 ## 42 Norm Considerations
 
-### Function Structure (Basic)
+### The Problem: Function Length
+
+The full defensive implementation of sort_five with all rotation logic **exceeds 25 lines**. We need to extract the rotation logic into a static helper function.
+
+**Line count analysis:**
+```
+Defensive checks:     4 lines
+First minimum logic: 12 lines (find + rotations + pb)
+Second minimum logic: 10 lines (find + rotations + pb)
+Final operations:     4 lines (sort_three + 2x pa)
+Total:              ~30 lines ❌ EXCEEDS NORM
+```
+
+### Solution: Static Helper Function
+
+Extract the "rotate minimum to top" logic into a reusable static helper function.
+
+**Benefits:**
+- sort_five stays under 25 lines
+- Helper is reusable for both 5-element and 4-element phases
+- Cleaner separation of concerns
+- Each function has single responsibility
+
+---
+
+### Helper Function: rotate_min_to_top (static)
 
 ```c
-void	sort_five(t_stack **stack_a, t_stack **stack_b)
+static void	rotate_min_to_top(t_stack **stack_a, int size)
 {
-	int	min_index;
+	int	min_idx;
 
-	min_index = find_min_index(*stack_a);
-	if (min_index == 1)
+	min_idx = find_min_index(*stack_a);
+	if (min_idx == 1)
 		sa(stack_a, 1);
-	else if (min_index == 2)
+	else if (min_idx == 2 && size == 5)
 	{
 		ra(stack_a, 1);
 		ra(stack_a, 1);
 	}
-	else if (min_index == 3)
+	else if ((min_idx == 3 && size == 5) || (min_idx == 2 && size == 4))
 	{
 		rra(stack_a, 1);
 		rra(stack_a, 1);
 	}
-	else if (min_index == 4)
+	else if ((min_idx == 4 && size == 5) || (min_idx == 3 && size == 4))
 		rra(stack_a, 1);
-	pb(stack_a, stack_b, 1);
-	// Repeat for second minimum
-	// ... (continued in next part of function)
-	sort_three(stack_a);
-	pa(stack_a, stack_b, 1);
-	pa(stack_a, stack_b, 1);
 }
 ```
 
-### Function Structure (Defensive - Recommended)
+**Line count: 18 lines ✅ UNDER 25**
+
+**Norm compliance:**
+- ✅ Under 25 lines (18 lines)
+- ✅ `static` keyword for file-local scope
+- ✅ Single responsibility: rotate minimum to top
+- ✅ Only 1 variable (min_idx)
+- ✅ No line over 80 characters
+- ✅ Tabs for indentation
+- ✅ Handles both 5-element and 4-element cases via size parameter
+
+---
+
+### Main Function: sort_five (Defensive - Recommended)
 
 ```c
 void	sort_five(t_stack **stack_a, t_stack **stack_b)
 {
-	int	min_index;
-
 	if (!stack_a || !stack_b || !*stack_a)
 		return ;
 	if (stack_size(*stack_a) < 5)
 		return ;
-	min_index = find_min_index(*stack_a);
-	// ... rotation logic for first minimum
+	rotate_min_to_top(stack_a, 5);
 	pb(stack_a, stack_b, 1);
-	min_index = find_min_index(*stack_a);
-	// ... rotation logic for second minimum
+	rotate_min_to_top(stack_a, 4);
 	pb(stack_a, stack_b, 1);
 	sort_three(stack_a);
 	pa(stack_a, stack_b, 1);
@@ -714,15 +731,82 @@ void	sort_five(t_stack **stack_a, t_stack **stack_b)
 }
 ```
 
+**Line count: 14 lines ✅ UNDER 25**
+
 **Norm compliance:**
-- ✅ Can be kept under 25 lines with helper function
-- ✅ Single responsibility: sorts 5 elements
-- ✅ Only 1 variable (min_index)
+- ✅ Under 25 lines (14 lines)
+- ✅ Single responsibility: orchestrates 5-element sort
+- ✅ No variables needed (helper handles min_index)
 - ✅ No line over 80 characters
 - ✅ Tabs for indentation
-- ✅ Defensive checks add 4 lines
+- ✅ Defensive checks included
+- ✅ Clean, readable logic
 
-**Note:** May need to extract rotation logic to helper function to stay under 25 lines. Consider a `bring_min_to_top(stack_a, size)` helper.
+---
+
+### Complete File Structure
+
+```c
+/* ************************************************************************** */
+/*                                                                            */
+/*   sort_small.c                                                             */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "push_swap.h"
+
+// ... sort_two, sort_three, sort_four functions ...
+
+static void	rotate_min_to_top(t_stack **stack_a, int size)
+{
+	int	min_idx;
+
+	min_idx = find_min_index(*stack_a);
+	if (min_idx == 1)
+		sa(stack_a, 1);
+	else if (min_idx == 2 && size == 5)
+	{
+		ra(stack_a, 1);
+		ra(stack_a, 1);
+	}
+	else if ((min_idx == 3 && size == 5) || (min_idx == 2 && size == 4))
+	{
+		rra(stack_a, 1);
+		rra(stack_a, 1);
+	}
+	else if ((min_idx == 4 && size == 5) || (min_idx == 3 && size == 4))
+		rra(stack_a, 1);
+}
+
+void	sort_five(t_stack **stack_a, t_stack **stack_b)
+{
+	if (!stack_a || !stack_b || !*stack_a)
+		return ;
+	if (stack_size(*stack_a) < 5)
+		return ;
+	rotate_min_to_top(stack_a, 5);
+	pb(stack_a, stack_b, 1);
+	rotate_min_to_top(stack_a, 4);
+	pb(stack_a, stack_b, 1);
+	sort_three(stack_a);
+	pa(stack_a, stack_b, 1);
+	pa(stack_a, stack_b, 1);
+}
+```
+
+---
+
+### Function Placement Note
+
+**IMPORTANT:** The `static` helper function MUST be placed **BEFORE** `sort_five` in the file, as C requires functions to be declared before use (unless you add a prototype).
+
+**Recommended file order:**
+1. sort_two
+2. sort_three
+3. sort_four
+4. rotate_min_to_top (static helper)
+5. sort_five
+6. sort_small (router)
 
 ---
 
@@ -988,9 +1072,9 @@ Beyond 5, need algorithmic sorting (Turk, quicksort, etc.)
 
 ## Location in Project
 
-**File:** `srcs/sort_small.c`
+**File:** `srcs/sort_small_utils.c`
 **Header:** `includes/push_swap.h`
-**Phase in TODO:** Phase 2.2 (Small Sorting Algorithms)
+**Phase in TODO:** Phase 6 (Small Sorting Algorithms)
 
 ---
 

@@ -387,162 +387,201 @@
 
 ---
 
-## Phase 6: Small Number Sorting (Hardcoded Solutions)
+## Phase 6: Small Number Sorting (Hardcoded Solutions) ✅ COMPLETE
 
-### 6.1 Two Numbers
-- [x] Create `srcs/sort_small.c`
+### File Structure
+```
+srcs/
+├── sort_small.c           # Router function only (~15 lines)
+│   └── sort_small()       # Routes to appropriate sort function
+│
+└── sort_small_utils.c     # All helper sorting functions
+    ├── sort_two()         # 2-element sort
+    ├── sort_three()       # 3-element sort
+    ├── sort_four()        # 4-element sort
+    ├── rotate_min_to_top() # Static helper for sort_five
+    └── sort_five()        # 5-element sort
+```
+
+### 6.1 Two Numbers ✅
+- [x] Create `srcs/sort_small_utils.c`
   - [x] Write `sort_two(t_stack **stack_a)` function
+    - [x] **DEFENSIVE:** Validate `!stack_a || !*stack_a` (CRITICAL)
+    - [x] **DEFENSIVE:** Validate `stack_size(*stack_a) < 2` (MEDIUM)
     - [x] If first > second, execute sa
     - [x] Else already sorted, do nothing
     - [x] Total operations: 0-1
 
-### 6.2 Three Numbers (Optimal)
-- [x] Add to `srcs/sort_small.c`
+### 6.2 Three Numbers (Optimal) ✅
+- [x] Add to `srcs/sort_small_utils.c`
   - [x] Write `sort_three(t_stack **stack_a)` function
-    - [ ] Identify positions of min, max, and middle values
-    - [ ] Use optimal case analysis:
-      - [ ] Case 1: [3,2,1] → sa + rra (or ra + sa)
-      - [ ] Case 2: [2,3,1] → rra
-      - [ ] Case 3: [3,1,2] → ra
-      - [ ] Case 4: [1,3,2] → sa + ra (or rra + sa)
-      - [ ] Case 5: [2,1,3] → sa
-      - [ ] Case 6: [1,2,3] → nothing (sorted)
-    - [ ] Maximum 2 operations for any configuration
+    - [x] **DEFENSIVE:** Validate `!stack_a || !*stack_a` (CRITICAL)
+    - [x] **DEFENSIVE:** Validate `stack_size(*stack_a) < 3` (MEDIUM)
+    - [x] Find maximum value using find_max
+    - [x] Use decision tree based on max position:
+      - [x] Max on top: ra, then sa if needed
+      - [x] Max in middle: rra, then sa if needed
+      - [x] Max on bottom: sa if out of order
+    - [x] Maximum 2 operations for any configuration
+    - [x] Under 25 lines (24 lines with defensive checks)
 
-### 6.3 Four Numbers
-- [ ] Add to `srcs/sort_small.c`
-  - [ ] Write `sort_four(t_stack **stack_a, t_stack **stack_b)` function
-    - [ ] Find smallest element
-    - [ ] Rotate/reverse rotate to bring it to top (choose cheaper direction)
-    - [ ] Push smallest to B (pb)
-    - [ ] Sort remaining 3 with sort_three
-    - [ ] Push smallest back to A (pa)
-    - [ ] Maximum operations: ~8-10
+### 6.3 Four Numbers ✅
+- [x] Add to `srcs/sort_small_utils.c`
+  - [x] Write `sort_four(t_stack **stack_a, t_stack **stack_b)` function
+    - [x] **DEFENSIVE:** Validate `!stack_a || !stack_b || !*stack_a` (CRITICAL)
+    - [x] **DEFENSIVE:** Validate `stack_size(*stack_a) < 4` (MEDIUM)
+    - [x] Find minimum using find_min_index
+    - [x] Rotate/reverse rotate to bring it to top (choose cheaper direction)
+    - [x] Push smallest to B (pb)
+    - [x] Sort remaining 3 with sort_three
+    - [x] Push smallest back to A (pa)
+    - [x] Maximum operations: ~6-7
 
-### 6.4 Five Numbers
-- [ ] Add to `srcs/sort_small.c`
-  - [ ] Write `sort_five(t_stack **stack_a, t_stack **stack_b)` function
-    - [ ] Find smallest element, push to B
-    - [ ] Find second smallest, push to B
-    - [ ] Sort remaining 3 with sort_three
-    - [ ] Push back both elements from B to A (pa, pa)
-    - [ ] Maximum operations: ~12
+### 6.4 Five Numbers ✅
+- [x] Add to `srcs/sort_small_utils.c`
+  - [x] Write `rotate_min_to_top(t_stack **stack_a, int size)` **static helper** (~18 lines)
+    - [x] Find minimum using find_min_index
+    - [x] Handle position 1: sa
+    - [x] Handle position 2 (5-elem): ra, ra
+    - [x] Handle position 2 (4-elem) / position 3 (5-elem): rra, rra
+    - [x] Handle position 3 (4-elem) / position 4 (5-elem): rra
+    - [x] **NOTE:** No defensive checks - trusts caller (sort_five) validation
+    - [x] **42 Norm:** 18 lines, under 25 lines ✅
+  - [x] Write `sort_five(t_stack **stack_a, t_stack **stack_b)` function
+    - [x] **DEFENSIVE:** Validate `!stack_a || !stack_b || !*stack_a` (CRITICAL)
+    - [x] **DEFENSIVE:** Validate `stack_size(*stack_a) < 5` (MEDIUM)
+    - [x] Call rotate_min_to_top(stack_a, 5) + pb
+    - [x] Call rotate_min_to_top(stack_a, 4) + pb
+    - [x] Sort remaining 3 with sort_three
+    - [x] Push back both elements from B to A (pa, pa)
+    - [x] Maximum operations: ~11-12
+    - [x] **42 Norm:** 14 lines, under 25 lines ✅
 
-### 6.5 Small Sort Router
-- [ ] Add to `srcs/sort_small.c`
-  - [ ] Write `sort_small(t_stack **stack_a, t_stack **stack_b)` function
-    - [ ] Get stack size
-    - [ ] If size == 2, call sort_two
-    - [ ] If size == 3, call sort_three
-    - [ ] If size == 4, call sort_four
-    - [ ] If size == 5, call sort_five
-    - [ ] Return after sorting
+### 6.5 Small Sort Router ✅
+- [x] Create `srcs/sort_small.c` (router function only)
+  - [x] Write `sort_small(t_stack **stack_a, t_stack **stack_b)` function
+    - [x] **DEFENSIVE:** Validate `!stack_a || !stack_b || !*stack_a` (CRITICAL)
+    - [x] Get stack size
+    - [x] If size == 2, call sort_two
+    - [x] If size == 3, call sort_three
+    - [x] If size == 4, call sort_four
+    - [x] If size == 5, call sort_five
+    - [x] Edge cases (0, 1, >5): returns safely
+    - [x] **LAYERED DEFENSE:** Each delegated function has own checks
 
----
-
-## Phase 7: Large Number Sorting - Turk/Chunk Algorithm
-
-### 7.1 Chunk/Partition Strategy
-- [ ] Create `srcs/sort_large.c`
-  - [ ] Write `push_chunks_to_b(t_stack **stack_a, t_stack **stack_b, int size)` function
-    - [ ] Determine chunk size based on total size
-      - [ ] For 100 elements: ~20 chunks (5 per chunk)
-      - [ ] For 500 elements: ~35 chunks (~14 per chunk)
-    - [ ] Calculate number of chunks
-    - [ ] Push elements to B in chunks based on index:
-      - [ ] For each chunk range:
-        - [ ] Find elements in stack A within current chunk index range
-        - [ ] Rotate/reverse rotate to bring element to top (cheaper option)
-        - [ ] Push to B (pb)
-        - [ ] Rotate B intelligently to keep larger elements on top
-    - [ ] Continue until all elements (except ~3 smallest) are in B
-
-### 7.2 Cost Calculation
-- [ ] Create `srcs/cost.c`
-  - [ ] Write `calculate_cost(t_stack *stack_a, t_stack *stack_b)` function
-    - [ ] Assign positions to both stacks
-    - [ ] For each element in B:
-      - [ ] Find target position in A (where it should be inserted)
-      - [ ] Calculate cost to bring element to top of B
-      - [ ] Calculate cost to rotate A to target position
-      - [ ] Store both costs in node
-
-  - [ ] Write `find_target_position(t_stack *stack_a, int index_b)` function
-    - [ ] Find position in A where element from B should be inserted
-    - [ ] Find smallest element in A that is larger than index_b
-    - [ ] If none found, target is position of smallest element
-    - [ ] Return target position
-
-  - [ ] Write `calculate_move_cost(t_stack *stack, int target_pos)` function
-    - [ ] Calculate cost to move element to top
-    - [ ] Compare rotate cost vs reverse rotate cost
-    - [ ] Return cheaper cost (and direction)
-
-### 7.3 Cheapest Element Selection
-- [ ] Add to `srcs/cost.c`
-  - [ ] Write `find_cheapest(t_stack *stack_b)` function
-    - [ ] Calculate total cost for each element (cost_a + cost_b)
-    - [ ] Find element with minimum total cost
-    - [ ] Return pointer to cheapest element
-
-  - [ ] Write `execute_cheapest_move(t_stack **a, t_stack **b, t_stack *cheapest)` function
-    - [ ] Get costs from cheapest element
-    - [ ] Execute optimal moves:
-      - [ ] If both costs positive (both rotate): use rr
-      - [ ] If both costs negative (both reverse rotate): use rrr
-      - [ ] If mixed: execute independently
-    - [ ] Bring element to top of B
-    - [ ] Rotate A to target position
-    - [ ] Execute pa to push to A
-
-### 7.4 Main Large Sort Function
-- [ ] Add to `srcs/sort_large.c`
-  - [ ] Write `sort_large(t_stack **stack_a, t_stack **stack_b)` function
-    - [ ] Push chunks to B using push_chunks_to_b
-    - [ ] While B is not empty:
-      - [ ] Calculate costs for all elements in B
-      - [ ] Find cheapest element
-      - [ ] Execute cheapest move
-      - [ ] Push element from B to A at target position
-    - [ ] Final rotation to ensure smallest element is on top
-
-  - [ ] Write `final_rotate(t_stack **stack_a)` function
-    - [ ] Find position of minimum element
-    - [ ] Rotate or reverse rotate to bring it to top
-    - [ ] Choose cheaper direction
+### 6.6 Documentation Updates ✅
+- [x] Updated all sort_small.c function documentation with:
+  - [x] Defensive programming approach (CRITICAL/HIGH/MEDIUM severity)
+  - [x] Basic and Defensive pseudocode versions
+  - [x] Defensive Programming Checklists
+  - [x] 42 Norm compliant function structures
+- [x] Created rotate_min_to_top.md helper function documentation (~28 KB)
 
 ---
 
-## Phase 8: Main Program and Algorithm Selection
+## Phase 7: Large Number Sorting - Turk/Chunk Algorithm ✅ COMPLETE
 
-### 8.1 Main Function
-- [ ] Create `srcs/main.c`
-  - [ ] Write `main(int argc, char **argv)` function
-    - [ ] Declare stack_a, stack_b pointers, and numbers array
-    - [ ] Initialize stack_b to NULL
-    - [ ] **Step 1:** Call parse_arguments(argc, argv) to get numbers array
-    - [ ] If parse fails (NULL returned): return 0 (no error - just no args)
-    - [ ] **Step 2:** Call init_stack_a(numbers) to create and validate stack A
-    - [ ] If init fails (NULL returned):
-      - [ ] Free numbers with free_split() - ALWAYS allocated
-      - [ ] Call print_error()
-      - [ ] Return 1
-    - [ ] Check if stack is already sorted
-      - [ ] If sorted: free stack A, free numbers, exit (no operations)
-    - [ ] Assign indices to stack A (assign_index)
-    - [ ] Route to appropriate sorting algorithm (choose_sort)
-    - [ ] Free both stacks
-    - [ ] **Step 3:** Free numbers array with free_split() - ALWAYS required
-    - [ ] Return 0
-    - [ ] **IMPORTANT:** Always free numbers - no argc checks needed
+### 7.1 Chunk/Partition Strategy ✅
+- [x] Create `srcs/sort_large.c`
+  - [x] Write `push_chunks_to_b(t_stack **stack_a, t_stack **stack_b, int size)` function
+    - [x] Determine chunk size based on total size
+      - [x] For 100 elements: ~20 chunks (5 per chunk)
+      - [x] For 500 elements: ~35 chunks (~14 per chunk)
+    - [x] Calculate number of chunks
+    - [x] Push elements to B in chunks based on index:
+      - [x] For each chunk range:
+        - [x] Find elements in stack A within current chunk index range
+        - [x] Rotate/reverse rotate to bring element to top (cheaper option)
+        - [x] Push to B (pb)
+        - [x] Rotate B intelligently to keep larger elements on top
+    - [x] Continue until all elements (except ~3 smallest) are in B
 
-### 8.2 Algorithm Router
-- [ ] Add to `srcs/main.c`
-  - [ ] Write `choose_sort(t_stack **stack_a, t_stack **stack_b)` function
-    - [ ] Get size of stack A
-    - [ ] If size <= 5: call sort_small
-    - [ ] Else: call sort_large
-    - [ ] This implements the hybrid approach
+### 7.2 Cost Calculation ✅
+- [x] Create `srcs/cost.c`
+  - [x] Write `calculate_cost(t_stack *stack_a, t_stack *stack_b)` function
+    - [x] Assign positions to both stacks
+    - [x] For each element in B:
+      - [x] Find target position in A (where it should be inserted)
+      - [x] Calculate cost to bring element to top of B
+      - [x] Calculate cost to rotate A to target position
+      - [x] Store both costs in node
+
+  - [x] Write `find_target_position(t_stack *stack_a, int index_b)` function
+    - [x] Find position in A where element from B should be inserted
+    - [x] Find smallest element in A that is larger than index_b
+    - [x] If none found, target is position of smallest element
+    - [x] Return target position
+
+  - [x] Write `calculate_move_cost(t_stack *stack, int target_pos)` function
+    - [x] Calculate cost to move element to top
+    - [x] Compare rotate cost vs reverse rotate cost
+    - [x] Return cheaper cost (and direction)
+
+### 7.3 Cheapest Element Selection ✅
+- [x] Add to `srcs/cost.c`
+  - [x] Write `find_cheapest(t_stack *stack_b)` function
+    - [x] Calculate total cost for each element (cost_a + cost_b)
+    - [x] Find element with minimum total cost
+    - [x] Return pointer to cheapest element
+
+  - [x] Write `execute_cheapest_move(t_stack **a, t_stack **b, t_stack *cheapest)` function
+    - [x] Get costs from cheapest element
+    - [x] Execute optimal moves:
+      - [x] If both costs positive (both rotate): use rr
+      - [x] If both costs negative (both reverse rotate): use rrr
+      - [x] If mixed: execute independently
+    - [x] Bring element to top of B
+    - [x] Rotate A to target position
+    - [x] Execute pa to push to A
+
+### 7.4 Main Large Sort Function ✅
+- [x] Add to `srcs/sort_large.c`
+  - [x] Write `sort_large(t_stack **stack_a, t_stack **stack_b)` function
+    - [x] Push chunks to B using push_chunks_to_b
+    - [x] While B is not empty:
+      - [x] Calculate costs for all elements in B
+      - [x] Find cheapest element
+      - [x] Execute cheapest move
+      - [x] Push element from B to A at target position
+    - [x] Final rotation to ensure smallest element is on top
+
+  - [x] Write `final_rotate(t_stack **stack_a)` function
+    - [x] Find position of minimum element
+    - [x] Rotate or reverse rotate to bring it to top
+    - [x] Choose cheaper direction
+
+---
+
+## Phase 8: Main Program and Algorithm Selection ✅ COMPLETE
+
+### 8.1 Main Function ✅
+- [x] Create `srcs/main.c`
+  - [x] Write `main(int argc, char **argv)` function
+    - [x] Declare stack_a, stack_b pointers, and numbers array
+    - [x] Initialize stack_b to NULL
+    - [x] **Step 1:** Call parse_arguments(argc, argv) to get numbers array
+    - [x] If parse fails (NULL returned): return 0 (no error - just no args)
+    - [x] **Step 2:** Call init_stack_a(numbers) to create and validate stack A
+    - [x] If init fails (NULL returned):
+      - [x] Free numbers with free_split() - ALWAYS allocated
+      - [x] Call print_error()
+      - [x] Return 1
+    - [x] Check if stack is already sorted
+      - [x] If sorted: free stack A, free numbers, exit (no operations)
+    - [x] Assign indices to stack A (assign_index)
+    - [x] Route to appropriate sorting algorithm (choose_sort)
+    - [x] Free both stacks
+    - [x] **Step 3:** Free numbers array with free_split() - ALWAYS required
+    - [x] Return 0
+    - [x] **IMPORTANT:** Always free numbers - no argc checks needed
+
+### 8.2 Algorithm Router ✅
+- [x] Add to `srcs/main.c`
+  - [x] Write `choose_sort(t_stack **stack_a, t_stack **stack_b)` function
+    - [x] Get size of stack A
+    - [x] If size <= 5: call sort_small
+    - [x] Else: call sort_large
+    - [x] This implements the hybrid approach
 
 ---
 
